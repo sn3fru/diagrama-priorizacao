@@ -658,73 +658,50 @@
 
         // --- Save Data Function ---
         // --- Save Data Function (MODIFICADA para chamar Netlify Function) ---
-            function saveDataToSheet(changedNodeData) {
-                console.log("Entrou em saveDataToSheet. changedNodeData =", changedNodeData);
-                if (!changedNodeData || !changedNodeData.id || changedNodeData.impact == null || changedNodeData.difficulty == null) {
-                    console.error("Dados insuficientes para salvar:", changedNodeData);
-                    alert("Erro interno: Não foi possível determinar quais dados salvar.");
-                    return;
-                }
+                    function saveDataToSheet(changedNodeData) {
+                        // Verificação inicial mantida
+                        if (!changedNodeData || !changedNodeData.id || changedNodeData.impact == null || changedNodeData.difficulty == null) {
+                            console.error("Dados insuficientes para salvar:", changedNodeData);
+                            alert("Erro interno: Não foi possível determinar quais dados salvar.");
+                            return;
+                        }
 
-                console.log(`Salvando alterações para ${changedNodeData.id} via Netlify Function...`);
-                const savingIndicator = d3.select('body').append('div')
-                    .attr('id', 'saving-indicator')
-                    .style('position', 'fixed').style('bottom', '10px').style('right', '10px')
-                    .style('background-color', 'rgba(0,0,0,0.7)').style('color', 'white')
-                    .style('padding', '5px 10px').style('border-radius', '3px').text('Salvando...');
+                        console.log(`Salvando alterações para ${changedNodeData.id} via Netlify Function...`);
+                        const savingIndicator = d3.select('body').append('div') // ... (código do indicador de salvamento)
+                            .attr('id', 'saving-indicator').style('position', 'fixed').style('bottom', '10px').style('right', '10px').style('background-color', 'rgba(0,0,0,0.7)').style('color', 'white').style('padding', '5px 10px').style('border-radius', '3px').text('Salvando...');
 
-                // Dados a serem enviados para a Netlify Function
-                const payload = {
-                    id: changedNodeData.id,
-                    impact: changedNodeData.impact,
-                    difficulty: changedNodeData.difficulty
-                    // Adicione outros campos aqui se precisar salvar mais tarde
-                    // progress: changedNodeData.progress
-                };
+                        // Payload JSON a ser enviado
+                        const payload = {
+                            id: changedNodeData.id,
+                            impact: changedNodeData.impact,
+                            difficulty: changedNodeData.difficulty
+                            // Adicione outros campos aqui se precisar salvar mais tarde
+                            // progress: changedNodeData.progress
+                        };
 
-                // --- MUDANÇA AQUI: Chama a Netlify Function ---
-                fetch('/.netlify/functions/save-data', { // Caminho relativo para a função
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json', // Envia JSON para a Netlify Function
-                    },
-                    body: JSON.stringify(payload) // Envia o payload como JSON
-                })
-                    // --------------------------------------------
-                    .then(response => {
-                        // A Netlify Function deve retornar status 200 em sucesso ou erro tratado
-                        if (!response.ok) {
-                            // Tenta ler o erro retornado pela função Netlify
-                            return response.json().then(errData => {
-                                throw new Error(`Erro ${response.status}: ${errData.error || response.statusText}`);
-                            }).catch(() => {
-                                // Se a resposta do erro não for JSON
-                                throw new Error(`Erro HTTP ${response.status}: ${response.statusText}`);
+                        // --- MUDANÇAS AQUI: Chama Netlify Function com JSON ---
+                        fetch('/.netlify/functions/save-data', { // Caminho relativo da função
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json', // Define o tipo como JSON
+                            },
+                            body: JSON.stringify(payload) // Envia o objeto como string JSON
+                        })
+                            // ----------------------------------------------------
+                            .then(response => { // Tratamento da resposta (mantido igual)
+                                if (!response.ok) {
+                                    return response.json().then(errData => { throw new Error(`Erro ${response.status}: ${errData.error || response.statusText}`); }).catch(() => { throw new Error(`Erro HTTP ${response.status}: ${response.statusText}`); });
+                                }
+                                return response.json();
+                            })
+                            .then(data => { // Tratamento do resultado (mantido igual)
+                                if (data.success) { console.log("Dados salvos (via Netlify Function):", data.message); savingIndicator.text('Salvo!').style('background-color', 'rgba(0, 128, 0, 0.7)').transition().delay(1500).remove(); }
+                                else { console.error("Falha ao salvar (Apps Script via Netlify):", data.error, data.details); alert(`Erro ao salvar dados: ${data.error}\nDetalhes: ${data.details || 'N/A'}`); savingIndicator.text('Erro ao salvar!').style('background-color', 'rgba(200, 0, 0, 0.7)').transition().delay(3000).remove(); }
+                            })
+                            .catch(error => { // Tratamento de erro de fetch (mantido igual)
+                                console.error("Erro no fetch para Netlify Function:", error); alert(`Falha grave ao salvar dados: ${error.message}`); savingIndicator.text('Erro de rede!').style('background-color', 'rgba(200, 0, 0, 0.7)').transition().delay(3000).remove();
                             });
-                        }
-                        return response.json(); // Resposta JSON da Netlify Function (que contém a resposta do Apps Script)
-                    })
-                    .then(data => {
-                        // Verifica a resposta *dentro* do JSON retornado pela Netlify Function (que veio do Apps Script)
-                        if (data.success) {
-                            console.log("Dados salvos (via Netlify Function):", data.message);
-                            savingIndicator.text('Salvo!').style('background-color', 'rgba(0, 128, 0, 0.7)')
-                                .transition().delay(1500).remove();
-                        } else {
-                            console.error("Falha ao salvar (Apps Script via Netlify):", data.error, data.details);
-                            alert(`Erro ao salvar dados: ${data.error}\nDetalhes: ${data.details || 'N/A'}`);
-                            savingIndicator.text('Erro ao salvar!').style('background-color', 'rgba(200, 0, 0, 0.7)')
-                                .transition().delay(3000).remove();
-                        }
-                    })
-                    .catch(error => {
-                        // Erro de rede ao chamar a Netlify Function ou erro não tratado
-                        console.error("Erro no fetch para Netlify Function:", error);
-                        alert(`Falha grave ao salvar dados: ${error.message}`);
-                        savingIndicator.text('Erro de rede!').style('background-color', 'rgba(200, 0, 0, 0.7)')
-                            .transition().delay(3000).remove();
-                    });
-            }
+                    }
 
         // --- Inicialização ---
         loadDataAndInitialize();
