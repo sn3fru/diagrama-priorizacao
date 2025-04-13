@@ -502,7 +502,19 @@
                 matrixG.select(`#matrix-label-${d.id}`).attr("x", xScale(d.difficulty)).attr("y", yScale(d.impact));
                 updateMatrixDependencyLinks(d.id); // Atualiza links conectados
             };
-            const dragendedMatrix = function (event, d) { d3.select(this).classed("dragging", false); updateDiagram(); saveDataToSheet(); };
+            const dragendedMatrix = function (event, d) {
+                d3.select(this).classed("dragging", false);
+
+                // Se d tiver parent (ou se d.type == 'child'), chama save
+                if (d.parent) {
+                    updateDiagram();
+                    saveDataToSheet(d);
+                } else {
+                    // Se for nó pai, ignora ou faça outra lógica
+                    updateDiagram();
+                }
+            };
+
 
             // Pontos (Círculos)
             const dots = matrixG.selectAll(".matrix-dot").data(matrixData, d => d.id);
@@ -647,6 +659,7 @@
         // --- Save Data Function ---
         // --- Save Data Function (MODIFICADA para chamar Netlify Function) ---
             function saveDataToSheet(changedNodeData) {
+                console.log("Entrou em saveDataToSheet. changedNodeData =", changedNodeData);
                 if (!changedNodeData || !changedNodeData.id || changedNodeData.impact == null || changedNodeData.difficulty == null) {
                     console.error("Dados insuficientes para salvar:", changedNodeData);
                     alert("Erro interno: Não foi possível determinar quais dados salvar.");
