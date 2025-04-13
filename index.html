@@ -33,22 +33,93 @@
             margin-bottom: 15px;
         }
 
-        /* --- Container da Matriz --- */
-        #matrix-container {
+        /* --- Layout Superior (Matriz + Tabela) --- */
+        .flex-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            align-items: flex-start;
             width: 95%;
-            max-width: 800px;
+            max-width: 1400px;
+            margin-bottom: 30px;
+        }
+
+        #matrix-section {
+            flex: 1 1 500px;
+            margin-right: 20px;
+            min-width: 400px;
+        }
+
+        #matrix-container {
+            width: 100%;
             height: 450px;
             border: 1px solid #ccc;
-            margin-bottom: 25px;
             background-color: #fff;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             position: relative;
+            margin-bottom: 0;
         }
 
-        #impact-difficulty-matrix {
-            display: block;
+        #priority-section {
+            flex: 1 1 350px;
+            min-width: 300px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #priority-table-container {
             width: 100%;
-            height: 100%;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            background-color: #fff;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        #priority-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+
+        #priority-table th,
+        #priority-table td {
+            border: 1px solid #ddd;
+            padding: 5px 8px;
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        #priority-table th:first-child,
+        #priority-table td:first-child {
+            text-align: center;
+            width: 35px;
+        }
+
+        #priority-table td:nth-child(3),
+        #priority-table td:nth-child(4),
+        #priority-table td:nth-child(5) {
+            text-align: right;
+            width: 60px;
+        }
+
+        #priority-table th {
+            background-color: #f2f2f2;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        #priority-table tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        #priority-explanation {
+            font-size: 10px;
+            color: #555;
+            margin-top: 5px;
+            line-height: 1.4;
         }
 
         /* --- Estilos da Matriz (SVG) --- */
@@ -112,20 +183,10 @@
             pointer-events: none;
             text-anchor: middle;
             dominant-baseline: central;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
             user-select: none;
         }
 
-        /* NOVO: Estilo para setas de dependência na matriz */
-        .matrix-dependency-link {
-            stroke: #666;
-            stroke-width: 0.8px;
-            opacity: 0.7;
-        }
-
-        /* --- Tooltip da Matriz --- */
+        /* Tooltip */
         #matrix-tooltip {
             position: absolute;
             opacity: 0;
@@ -146,7 +207,29 @@
             color: #aed6f1;
         }
 
-        /* --- Container do Diagrama Principal --- */
+        /* --- Link de Pré-requisito mais transparente --- */
+        .prerequisite {
+            stroke: #8e44ad;
+            stroke-width: 1.3px;
+            stroke-dasharray: 5, 3;
+            opacity: 0.5;
+        }
+
+        /* --- Highlight de pontos --- */
+        .matrix-dot.highlighted {
+            stroke: #FFC300;
+            stroke-width: 2.5px;
+            opacity: 1;
+            filter: url(#matrix-aura);
+        }
+
+        .matrix-dot.related {
+            stroke: #FFA500;
+            stroke-width: 1.5px;
+            opacity: 0.9;
+        }
+
+        /* --- Diagrama Principal --- */
         #diagram-container {
             width: 95%;
             max-width: 1600px;
@@ -169,7 +252,6 @@
             cursor: grabbing;
         }
 
-        /* --- Estilos do Diagrama Principal --- */
         .node-group,
         .child-node-group {
             cursor: pointer;
@@ -187,7 +269,7 @@
         .child-node-group.active>rect {
             stroke: #3498db;
             stroke-width: 2.5px;
-            filter: drop-shadow(3px 5px 2px rgb(0 0 0 / 0.2));
+            filter: drop-shadow(3px 5px 2px rgba(0, 0, 0, 0.2));
         }
 
         .node.current>rect {
@@ -216,9 +298,6 @@
         .comment-text,
         .metric-tag text {
             pointer-events: none;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
             user-select: none;
         }
 
@@ -264,11 +343,9 @@
             dominant-baseline: middle;
         }
 
-        /* Link Styles */
         .link,
         .mainFlow,
-        .childLink,
-        .prerequisite {
+        .childLink {
             fill: none;
             pointer-events: none;
         }
@@ -284,17 +361,7 @@
             stroke-width: 1px;
         }
 
-        /* Classe é childLink */
-        .prerequisite {
-            stroke: #8e44ad;
-            stroke-width: 1.3px;
-            stroke-dasharray: 5, 3;
-            opacity: 0.8;
-        }
-
-        /* Classe é prerequisite */
-
-        /* Legends */
+        /* --- Legendas --- */
         #legend,
         #legend2 {
             position: absolute;
@@ -318,7 +385,8 @@
             font-size: 11px;
         }
 
-        #legend .legend-item {
+        #legend .legend-item,
+        #legend2 .legend-item {
             display: flex;
             align-items: center;
             margin-bottom: 4px;
@@ -338,12 +406,6 @@
         .legend-color.proposed {
             background-color: #EAECEE;
             border-style: dashed;
-        }
-
-        #legend2 .legend-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 4px;
         }
 
         .legend-tag-color {
@@ -388,12 +450,25 @@
 <body>
     <h1>Precificação Dinâmica - Componentes e Priorização</h1>
 
-    <h2>Matriz Impacto x Dificuldade (Tarefas)</h2>
-    <div id="matrix-container">
-        <svg id="impact-difficulty-matrix"></svg>
-        <div id="matrix-tooltip"></div>
+    <!-- Layout Superior -->
+    <div id="top-section" class="flex-container">
+        <!-- Matriz -->
+        <div id="matrix-section">
+            <h2>Matriz Impacto x Dificuldade (Tarefas)</h2>
+            <div id="matrix-container">
+                <svg id="impact-difficulty-matrix"></svg>
+                <div id="matrix-tooltip"></div>
+            </div>
+        </div>
+        <!-- Tabela de Priorização -->
+        <div id="priority-section">
+            <h2>Tabela de Priorização</h2>
+            <div id="priority-table-container"></div>
+            <div id="priority-explanation"></div>
+        </div>
     </div>
 
+    <!-- Diagrama Principal -->
     <h2>Diagrama Conceitual Interativo</h2>
     <div id="diagram-container">
         <svg id="diagram"></svg>
@@ -406,306 +481,802 @@
                 <div class="legend-color proposed"></div> Bloco/Comp. Proposto
             </div>
             <div class="legend-item">
-                <svg width="25" height="10" style="margin-right: 4px;">
+                <svg width="25" height="10" style="margin-right:4px;">
                     <line x1="0" y1="5" x2="20" y2="5" class="mainFlow legend-line"
                         marker-end="url(#mainFlow-arrowhead)"></line>
-                </svg>
-                Fluxo Principal
+                </svg> Fluxo Principal
             </div>
             <div class="legend-item">
-                <svg width="25" height="10" style="margin-right: 4px;">
+                <svg width="25" height="10" style="margin-right:4px;">
                     <line x1="0" y1="5" x2="20" y2="5" class="prerequisite legend-line"
                         marker-end="url(#prerequisite-arrowhead)"></line>
-                </svg>
-                Pré-requisito
+                </svg> Pré-requisito
             </div>
         </div>
         <div id="legend2">
             <div><strong>Métricas (Tags):</strong></div>
-            <div class="legend-item"> <span class="legend-tag-color metric-impact"></span> I: Impacto </div>
-            <div class="legend-item"> <span class="legend-tag-color metric-difficulty"></span> D: Dificuldade </div>
-            <div class="legend-item"> <span class="legend-tag-color metric-progress"></span> P: Progresso </div>
+            <div class="legend-item"><span class="legend-tag-color metric-impact"></span> I: Impacto</div>
+            <div class="legend-item"><span class="legend-tag-color metric-difficulty"></span> D: Dificuldade</div>
+            <div class="legend-item"><span class="legend-tag-color metric-progress"></span> P: Progresso</div>
         </div>
     </div>
 
     <script src="https://d3js.org/d3.v7.min.js"></script>
-
     <script>
         // --- Configurações Globais ---
-        const nodeWidth = 180; const childNodeWidth = 160;
-        const minNodeHeight = 70; const minChildNodeHeight = 60;
-        const horizontalSpacing = nodeWidth * 1.6; const verticalSpacingBase = 150;
-        const childVerticalSpacing = 15; const verticalExpandSpacing = 25;
-
-        // --- URL do Google Apps Script ---
-        // SUBSTITUA PELA URL REAL DO SEU APLICATIVO WEB IMPLANTADO
+        const nodeWidth = 180, childNodeWidth = 160;
+        const minNodeHeight = 70, minChildNodeHeight = 60;
+        const horizontalSpacing = nodeWidth * 1.6;
+        const verticalSpacingBase = 80; // REDUZIDO de 150
+        const childVerticalSpacing = 15, verticalExpandSpacing = 25;
         const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz7I1Mh_5hvJrHzFJfsf4Cz0zq4v_07MIqbVN0CHaqzEFiejH64px3LukAIUuNJvN1OAA/exec";
 
-        let allNodes = []; let allLinks = []; let nodeDataMap = new Map();
-        let diagramData = { nodes: [], links: [] }; // Começa vazio, será carregado
+        let allNodes = [], allLinks = [], nodeDataMap = new Map();
+        let diagramData = { nodes: [], links: [] };
+        let highlightedMatrixNodeId = null;
 
-        // --- CÓDIGO PARA MATRIZ DE PRIORIZAÇÃO ---
+        // --- Tabela de Priorização ---
+        function calculatePrioritizationData(nodes) {
+            const taskNodes = nodes.filter(d =>
+                d.parent && d.impact != null && !isNaN(d.impact)
+                && d.difficulty != null && !isNaN(d.difficulty)
+            );
+            if (!taskNodes.length) return [];
+            const taskMap = new Map(taskNodes.map(n => [n.id, n]));
+            const dependentsMap = new Map();
+            taskNodes.forEach(node => {
+                node.pontosTarefa = (node.impact || 0) - (node.difficulty || 0);
+                if (node.prerequisites && Array.isArray(node.prerequisites)) {
+                    node.prerequisites.forEach(pr => {
+                        if (!dependentsMap.has(pr)) dependentsMap.set(pr, []);
+                        dependentsMap.get(pr).push(node.id);
+                    });
+                }
+            });
+            return taskNodes.map(node => {
+                let ptsDep = 0;
+                (dependentsMap.get(node.id) || []).forEach(depId => {
+                    const dep = taskMap.get(depId);
+                    if (dep && dep.pontosTarefa != null) ptsDep += dep.pontosTarefa;
+                });
+                return {
+                    id: node.id,
+                    label: node.label.replace(/^\d+\.\s*/, ''),
+                    pontosTarefa: node.pontosTarefa,
+                    pontosDependentes: ptsDep,
+                    pontosTotais: node.pontosTarefa + ptsDep
+                };
+            });
+        }
+        function drawPriorityTable() {
+            const c = d3.select("#priority-table-container"), e = d3.select("#priority-explanation");
+            c.html(""); e.html("");
+            const data = calculatePrioritizationData(allNodes);
+            if (!data.length) {
+                c.text("Não há tarefas com dados de impacto/dificuldade para priorizar.");
+                return;
+            }
+            data.sort((a, b) => b.pontosTotais - a.pontosTotais);
+            const table = c.append("table").attr("id", "priority-table"),
+                thead = table.append("thead"),
+                tbody = table.append("tbody");
+            thead.append("tr")
+                .selectAll("th")
+                .data(["#", "Tarefa", "Pts Task", "Pts Dep.", "Pts Total"])
+                .enter().append("th").html(d => d);
+            const rows = tbody.selectAll("tr").data(data).enter().append("tr");
+            rows.append("td").text((d, i) => i + 1);
+            rows.append("td").text(d => d.label).attr("title", d => d.id);
+            rows.append("td").text(d => d.pontosTarefa.toFixed(1));
+            rows.append("td").text(d => d.pontosDependentes.toFixed(1));
+            rows.append("td").text(d => d.pontosTotais.toFixed(1)).style("font-weight", "bold");
+            e.html(`
+                <strong>Cálculo de Priorização:</strong><br>
+                - <strong>Pts Task:</strong> Impacto - Dificuldade.<br>
+                - <strong>Pts Dep.:</strong> Soma dos 'Pts Task' de tarefas dependentes diretas.<br>
+                - <strong>Pts Total:</strong> Pts Task + Pts Dep.
+            `);
+        }
+
+        // --- Matriz Impacto x Dificuldade ---
         function drawImpactDifficultyMatrix() {
-            const matrixContainer = d3.select("#matrix-container");
-            const matrixSvg = d3.select("#impact-difficulty-matrix");
-            const tooltip = d3.select("#matrix-tooltip");
-            matrixSvg.selectAll("*").remove();
+            const mc = d3.select("#matrix-container"),
+                svg = d3.select("#impact-difficulty-matrix"),
+                tooltip = d3.select("#matrix-tooltip");
+            svg.selectAll("*").remove();
+            const rect = mc.node().getBoundingClientRect();
+            if (!rect.width || !rect.height) return;
+            const m = { top: 30, right: 30, bottom: 50, left: 60 },
+                w = rect.width - m.left - m.right,
+                h = rect.height - m.top - m.bottom;
+            const xScale = d3.scaleLinear().domain([0, 10.5]).range([0, w]),
+                yScale = d3.scaleLinear().domain([0, 10.5]).range([h, 0]);
+            const defs = svg.append("defs");
+            defs.append("marker")
+                .attr("id", "matrix-prerequisite-arrowhead")
+                .attr("viewBox", "0 -5 10 10")
+                .attr("refX", 5).attr("refY", 0)
+                .attr("markerWidth", 4).attr("markerHeight", 4)
+                .attr("orient", "auto-start-reverse")
+                .append("path")
+                .attr("d", "M0,-5L10,0L0,5")
+                .attr("fill", "#8e44ad");
+            const filter = defs.append("filter")
+                .attr("id", "matrix-aura")
+                .attr("x", "-50%").attr("y", "-50%")
+                .attr("width", "200%").attr("height", "200%");
+            filter.append("feGaussianBlur")
+                .attr("in", "SourceGraphic")
+                .attr("stdDeviation", 2.5)
+                .attr("result", "blur");
+            filter.append("feFlood")
+                .attr("flood-color", "#FFC300")
+                .attr("flood-opacity", "1")
+                .attr("result", "color");
+            filter.append("feComposite")
+                .attr("in", "color")
+                .attr("in2", "blur")
+                .attr("operator", "in")
+                .attr("result", "shadow");
+            const merge = filter.append("feMerge");
+            merge.append("feMergeNode").attr("in", "shadow");
+            merge.append("feMergeNode").attr("in", "SourceGraphic");
 
-            const containerRect = matrixContainer.node().getBoundingClientRect();
-            if (!containerRect || containerRect.width <= 0 || containerRect.height <= 0) { console.error("Matrix container not ready or has invalid dimensions."); return; }
-            const margin = { top: 30, right: 30, bottom: 50, left: 60 };
-            const width = containerRect.width - margin.left - margin.right;
-            const height = containerRect.height - margin.top - margin.bottom;
-            if (width <= 0 || height <= 0) { console.error("Calculated matrix dimensions are invalid."); return; }
+            const g = svg.append("g").attr("transform", `translate(${m.left},${m.top})`);
+            g.append("g").attr("class", "matrix-axis matrix-axis-x")
+                .attr("transform", `translate(0,${h})`)
+                .call(d3.axisBottom(xScale).ticks(10).tickSizeOuter(0));
+            g.append("g").attr("class", "matrix-axis matrix-axis-y")
+                .call(d3.axisLeft(yScale).ticks(10).tickSizeOuter(0));
+            svg.append("text")
+                .attr("class", "matrix-axis-label")
+                .attr("x", m.left + w / 2)
+                .attr("y", m.top + h + 35)
+                .text("Dificuldade Percebida (0-10)");
+            svg.append("text")
+                .attr("class", "matrix-axis-label")
+                .attr("transform", `translate(${m.left - 40},${m.top + h / 2}) rotate(-90)`)
+                .text("Impacto Percebido (0-10)");
+            const mid = 5;
+            g.append("line").attr("class", "quadrant-line")
+                .attr("x1", xScale(mid)).attr("y1", 0)
+                .attr("x2", xScale(mid)).attr("y2", h);
+            g.append("line").attr("class", "quadrant-line")
+                .attr("x1", 0).attr("y1", yScale(mid))
+                .attr("x2", w).attr("y2", yScale(mid));
 
-            const matrixG = matrixSvg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
-            const scaleDomain = [0, 10.5];
-            const xScale = d3.scaleLinear().domain(scaleDomain).range([0, width]);
-            const yScale = d3.scaleLinear().domain(scaleDomain).range([height, 0]);
+            const matrixData = allNodes.filter(d =>
+                d.parent && d.impact != null && !isNaN(d.impact)
+                && d.difficulty != null && !isNaN(d.difficulty)
+            );
+            const matrixMap = new Map(matrixData.map(n => [n.id, n]));
 
-            // Defs da Matriz
-            const matrixDefs = matrixSvg.append("defs");
-            matrixDefs.append("marker").attr("id", "matrix-prerequisite-arrowhead").attr("viewBox", "0 -5 10 10").attr("refX", 5).attr("refY", 0).attr("markerWidth", 4).attr("markerHeight", 4).attr("orient", "auto-start-reverse").append("path").attr("d", "M0,-5L10,0L0,5").attr("fill", "#8e44ad");
-
-            // Eixos, Labels, Quadrantes
-            const xAxis = d3.axisBottom(xScale).ticks(10).tickSizeOuter(0);
-            const yAxis = d3.axisLeft(yScale).ticks(10).tickSizeOuter(0);
-            matrixG.append("g").attr("class", "matrix-axis matrix-axis-x").attr("transform", `translate(0,${height})`).call(xAxis);
-            matrixG.append("g").attr("class", "matrix-axis matrix-axis-y").call(yAxis);
-            matrixSvg.append("text").attr("class", "matrix-axis-label").attr("x", margin.left + width / 2).attr("y", height + margin.top + 35).text("Dificuldade Percebida (0-10)");
-            matrixSvg.append("text").attr("class", "matrix-axis-label").attr("transform", `translate(${margin.left - 40}, ${margin.top + height / 2}) rotate(-90)`).text("Impacto Percebido (0-10)");
-            const midValue = 5;
-            matrixG.append("line").attr("class", "quadrant-line").attr("x1", xScale(midValue)).attr("y1", 0).attr("x2", xScale(midValue)).attr("y2", height);
-            matrixG.append("line").attr("class", "quadrant-line").attr("x1", 0).attr("y1", yScale(midValue)).attr("x2", width).attr("y2", yScale(midValue));
-
-            // Filtra dados (APENAS NÓS FILHOS com dados válidos)
-            const matrixData = allNodes.filter(d => d.parent && d.impact != null && !isNaN(d.impact) && d.difficulty != null && !isNaN(d.difficulty));
-            console.log('Filtered Matrix Data:', matrixData); // DEBUG
-            const matrixDataMap = new Map(matrixData.map(node => [node.id, node]));
-
-            // Tooltip Handlers
-            const handleMouseOver = (event, d) => { d3.select(event.currentTarget).raise().transition().duration(100).attr("r", 8).style("stroke-width", "1.5px"); tooltip.transition().duration(100).style("opacity", 0.9); let tooltipHtml = `<strong>${d.label || 'N/A'}</strong> (${d.id})<br/>`; tooltipHtml += `Tipo: ${d.type || 'N/A'}<br/>`; tooltipHtml += `Impacto: ${d.impact.toFixed(1)}<br/>`; tooltipHtml += `Dificuldade: ${d.difficulty.toFixed(1)}<br/>`; tooltipHtml += `Progresso: ${d.progress != null ? d.progress + '%' : 'N/A'}<br/>`; if (d.comment) tooltipHtml += `<em>"${d.comment.replace(/\n/g, '<br/>')}"</em>`; tooltip.html(tooltipHtml); };
-            const handleMouseMove = (event, d) => { tooltip.style("left", (event.pageX + 15) + "px").style("top", (event.pageY - 25) + "px"); };
-            const handleMouseOut = (event, d) => { d3.select(event.currentTarget).transition().duration(100).attr("r", 6).style("stroke-width", "0.5px"); tooltip.transition().duration(200).style("opacity", 0); };
-
-            // Drag Handlers
-            const dragstartedMatrix = function (event, d) { d3.select(this).raise().classed("dragging", true); tooltip.style("opacity", 0); };
-            const draggedMatrix = function (event, d) {
-                const [pointerX, pointerY] = d3.pointer(event, matrixG.node());
-                let newDifficulty = xScale.invert(pointerX); let newImpact = yScale.invert(pointerY);
-                newDifficulty = Math.round(Math.max(0, Math.min(10, newDifficulty)) * 10) / 10;
-                newImpact = Math.round(Math.max(0, Math.min(10, newImpact)) * 10) / 10;
-                const nodeToUpdate = findNodeById(d.id); // Acha no DADO GLOBAL
-                if (nodeToUpdate) { nodeToUpdate.difficulty = newDifficulty; nodeToUpdate.impact = newImpact; d.difficulty = newDifficulty; d.impact = newImpact; } // Atualiza ambos
-                else { d.difficulty = newDifficulty; d.impact = newImpact; } // Fallback
-                d3.select(this).attr("cx", xScale(d.difficulty)).attr("cy", yScale(d.impact));
-                matrixG.select(`#matrix-label-${d.id}`).attr("x", xScale(d.difficulty)).attr("y", yScale(d.impact));
-                updateMatrixDependencyLinks(d.id); // Atualiza links conectados
+            // Tooltip handlers
+            const over = (e, d) => {
+                d3.select(e.currentTarget).raise()
+                    .transition().duration(100)
+                    .attr("r", 8).style("stroke-width", "1.5px");
+                tooltip.transition().duration(100).style("opacity", 0.9);
+                let html = `<strong>${d.label || 'N/A'}</strong> (${d.id})<br/>`;
+                html += `Impacto: ${d.impact.toFixed(1)}<br/>`;
+                html += `Dificuldade: ${d.difficulty.toFixed(1)}<br/>`;
+                html += `Progresso: ${d.progress != null ? d.progress + '%' : 'N/A'}<br/>`;
+                if (d.comment) html += `<em>"${d.comment.replace(/\n/g, '<br/>')}"</em>`;
+                tooltip.html(html);
             };
-            const dragendedMatrix = function (event, d) {
-                d3.select(this).classed("dragging", false);
+            const move = (e, d) => {
+                tooltip.style("left", (e.clientX + 15) + "px")
+                    .style("top", (e.clientY - 25) + "px");
+            };
+            const out = (e, d) => {
+                d3.select(e.currentTarget)
+                    .transition().duration(100)
+                    .attr("r", 6).style("stroke-width", "0.5px");
+                tooltip.transition().duration(200).style("opacity", 0);
+            };
 
-                // Se d tiver parent (ou se d.type == 'child'), chama save
+            // Drag handlers
+            const dragStart = (e, d) => {
+                d3.select(e.currentTarget).raise().classed("dragging", true);
+                tooltip.style("opacity", 0);
+            };
+            const dragging = (e, d) => {
+                const [px, py] = d3.pointer(e, g.node());
+                let nd = xScale.invert(px), ni = yScale.invert(py);
+                nd = Math.round(Math.max(0, Math.min(10, nd)) * 10) / 10;
+                ni = Math.round(Math.max(0, Math.min(10, ni)) * 10) / 10;
+                const node = findNodeById(d.id);
+                if (node) { node.difficulty = nd; node.impact = ni; d.difficulty = nd; d.impact = ni; }
+                d3.select(e.currentTarget)
+                    .attr("cx", xScale(d.difficulty))
+                    .attr("cy", yScale(d.impact));
+                g.select(`#matrix-label-${d.id}`)
+                    .attr("x", xScale(d.difficulty))
+                    .attr("y", yScale(d.impact));
+                updateMatrixDependencyLinks(d.id);
+            };
+            const dragEnd = (e, d) => {
+                d3.select(e.currentTarget).classed("dragging", false);
                 if (d.parent) {
                     updateDiagram();
+                    drawPriorityTable();
                     saveDataToSheet(d);
                 } else {
-                    // Se for nó pai, ignora ou faça outra lógica
                     updateDiagram();
+                    drawPriorityTable();
                 }
             };
 
+            // Click highlight
+            const clickDot = (e, d) => {
+                e.stopPropagation();
+                g.selectAll(".matrix-dot")
+                    .classed("highlighted", false)
+                    .classed("related", false)
+                    .style("filter", null);
+                if (highlightedMatrixNodeId === d.id) {
+                    highlightedMatrixNodeId = null;
+                } else {
+                    highlightedMatrixNodeId = d.id;
+                    const rel = new Set([d.id]);
+                    if (d.prerequisites) d.prerequisites.forEach(p => { if (matrixMap.has(p)) rel.add(p); });
+                    matrixData.forEach(n => { if (n.prerequisites && n.prerequisites.includes(d.id)) rel.add(n.id); });
+                    g.selectAll(".matrix-dot")
+                        .filter(n => rel.has(n.id))
+                        .classed("highlighted", n => n.id === d.id)
+                        .classed("related", n => n.id !== d.id)
+                        .style("filter", n => n.id === d.id ? "url(#matrix-aura)" : null)
+                        .raise();
+                }
+            };
+            svg.on("click", () => {
+                if (highlightedMatrixNodeId) {
+                    g.selectAll(".matrix-dot")
+                        .classed("highlighted", false)
+                        .classed("related", false)
+                        .style("filter", null);
+                    highlightedMatrixNodeId = null;
+                }
+            });
 
-            // Pontos (Círculos)
-            const dots = matrixG.selectAll(".matrix-dot").data(matrixData, d => d.id);
+            // Desenha pontos
+            const dots = g.selectAll(".matrix-dot").data(matrixData, d => d.id);
             dots.exit().remove();
             dots.enter().append("circle")
+                .attr("id", d => `matrix-dot-${d.id}`)
                 .attr("class", d => `matrix-dot ${d.type}`)
-                .attr("cx", d => xScale(d.difficulty)).attr("cy", d => yScale(d.impact)).attr("r", 0)
-                .call(d3.drag().on("start", dragstartedMatrix).on("drag", draggedMatrix).on("end", dragendedMatrix))
-                .on("mouseover", handleMouseOver).on("mousemove", handleMouseMove).on("mouseout", handleMouseOut)
+                .attr("cx", d => xScale(d.difficulty))
+                .attr("cy", d => yScale(d.impact))
+                .attr("r", 0)
+                .call(d3.drag()
+                    .on("start", dragStart)
+                    .on("drag", dragging)
+                    .on("end", dragEnd))
+                .on("mouseover", over)
+                .on("mousemove", move)
+                .on("mouseout", out)
+                .on("click", clickDot)
                 .merge(dots)
-                .transition().duration(500).attr("cx", d => xScale(d.difficulty)).attr("cy", d => yScale(d.impact)).attr("r", 6);
+                .transition().duration(500)
+                .attr("cx", d => xScale(d.difficulty))
+                .attr("cy", d => yScale(d.impact))
+                .attr("r", 6);
 
-            // Labels dos Pontos
-            const labels = matrixG.selectAll(".matrix-label").data(matrixData, d => d.id);
+            // Labels
+            const labels = g.selectAll(".matrix-label").data(matrixData, d => d.id);
             labels.exit().remove();
             labels.enter().append("text")
-                .attr("class", "matrix-label").attr("id", d => `matrix-label-${d.id}`)
-                .attr("x", d => xScale(d.difficulty)).attr("y", d => yScale(d.impact)).attr("dy", -10).style("opacity", 0)
-                .text(d => { const label = d.label.replace(/^\d+\.\s*/, ''); return label.length > 15 ? label.substring(0, 12) + "..." : label; })
+                .attr("class", "matrix-label")
+                .attr("id", d => `matrix-label-${d.id}`)
+                .attr("x", d => xScale(d.difficulty))
+                .attr("y", d => yScale(d.impact))
+                .attr("dy", -10)
+                .style("opacity", 0)
+                .text(d => {
+                    const t = d.label.replace(/^\d+\.\s*/, '');
+                    return t.length > 15 ? t.slice(0, 12) + "..." : t;
+                })
                 .merge(labels)
                 .transition().duration(500).delay(100)
-                .attr("x", d => xScale(d.difficulty)).attr("y", d => yScale(d.impact)).style("opacity", 1);
+                .attr("x", d => xScale(d.difficulty))
+                .attr("y", d => yScale(d.impact))
+                .style("opacity", 1);
 
-            // --- Desenha/Atualiza Links de Dependência na Matriz ---
+            // Links de dependência
             function drawMatrixDependencyLinks() {
-                const dependencyLinksData = [];
-                matrixData.forEach(targetNode => { if (targetNode.prerequisites && Array.isArray(targetNode.prerequisites)) { targetNode.prerequisites.forEach(sourceId => { const sourceNode = matrixDataMap.get(sourceId); if (sourceNode) { dependencyLinksData.push({ source: sourceNode, target: targetNode, id: `matrix-link-${sourceId}-${targetNode.id}` }); } }); } });
-                const linkRadius = 6;
-                const linkSelection = matrixG.selectAll("line.prerequisite").data(dependencyLinksData, d => d.id); // Usa classe prerequisite
-                linkSelection.exit().remove();
-                linkSelection.enter().append("line")
-                    .attr("class", "prerequisite") // Usa classe prerequisite
-                    .attr("marker-end", "url(#matrix-prerequisite-arrowhead)") // Usa a seta correta
-                    .merge(linkSelection)
+                const deps = [];
+                matrixData.forEach(t => {
+                    if (t.prerequisites) t.prerequisites.forEach(s => {
+                        const src = matrixMap.get(s);
+                        if (src) deps.push({ source: src, target: t, id: `matrix-link-${s}-${t.id}` });
+                    });
+                });
+                const sel = g.selectAll("line.prerequisite").data(deps, d => d.id);
+                sel.exit().remove();
+                sel.enter().append("line")
+                    .attr("class", "prerequisite")
+                    .attr("marker-end", "url(#matrix-prerequisite-arrowhead)")
+                    .merge(sel)
                     .each(function (d) {
-                        const sourceX = xScale(d.source.difficulty); const sourceY = yScale(d.source.impact); const targetX = xScale(d.target.difficulty); const targetY = yScale(d.target.impact); const dx = targetX - sourceX; const dy = targetY - sourceY; const dist = Math.sqrt(dx * dx + dy * dy); if (dist === 0) { d3.select(this).attr("x1", sourceX).attr("y1", sourceY).attr("x2", sourceX).attr("y2", sourceY); return; } const ratio = (dist - linkRadius - 2) / dist; const adjustedTargetX = sourceX + dx * ratio; const adjustedTargetY = sourceY + dy * ratio; const startRatio = linkRadius / dist; const adjustedSourceX = sourceX + dx * startRatio; const adjustedSourceY = sourceY + dy * startRatio; d3.select(this).attr("x1", adjustedSourceX).attr("y1", adjustedSourceY).attr("x2", adjustedTargetX).attr("y2", adjustedTargetY);
+                        const sx = xScale(d.source.difficulty), sy = yScale(d.source.impact),
+                            tx = xScale(d.target.difficulty), ty = yScale(d.target.impact),
+                            dx = tx - sx, dy = ty - sy, dist = Math.sqrt(dx * dx + dy * dy), r = 6;
+                        if (dist === 0) {
+                            d3.select(this)
+                                .attr("x1", sx).attr("y1", sy)
+                                .attr("x2", sx).attr("y2", sy);
+                            return;
+                        }
+                        const ratio = (dist - r - 2) / dist, startRatio = r / dist;
+                        const x1 = sx + dx * startRatio, y1 = sy + dy * startRatio,
+                            x2 = sx + dx * ratio, y2 = sy + dy * ratio;
+                        d3.select(this)
+                            .attr("x1", x1).attr("y1", y1)
+                            .attr("x2", x2).attr("y2", y2);
                     });
             }
-
-            // Atualiza links conectados a um nó
-            function updateMatrixDependencyLinks(nodeId) {
-                const linksToUpdate = matrixG.selectAll("line.prerequisite") // Usa classe correta
-                    .filter(d => d.source.id === nodeId || d.target.id === nodeId);
-                linksToUpdate.each(function (d) {
-                    const sourceX = xScale(d.source.difficulty); const sourceY = yScale(d.source.impact); const targetX = xScale(d.target.difficulty); const targetY = yScale(d.target.impact); const dx = targetX - sourceX; const dy = targetY - sourceY; const dist = Math.sqrt(dx * dx + dy * dy); if (dist === 0) return; const linkRadius = 6; const ratio = (dist - linkRadius - 2) / dist; const adjustedTargetX = sourceX + dx * ratio; const adjustedTargetY = sourceY + dy * ratio; const startRatio = linkRadius / dist; const adjustedSourceX = sourceX + dx * startRatio; const adjustedSourceY = sourceY + dy * startRatio; d3.select(this).attr("x1", adjustedSourceX).attr("y1", adjustedSourceY).attr("x2", adjustedTargetX).attr("y2", adjustedTargetY);
-                });
+            function updateMatrixDependencyLinks(id) {
+                g.selectAll("line.prerequisite")
+                    .filter(d => d.source.id === id || d.target.id === id)
+                    .each(function (d) {
+                        const sx = xScale(d.source.difficulty), sy = yScale(d.source.impact),
+                            tx = xScale(d.target.difficulty), ty = yScale(d.target.impact),
+                            dx = tx - sx, dy = ty - sy, dist = Math.sqrt(dx * dx + dy * dy), r = 6;
+                        if (dist === 0) return;
+                        const ratio = (dist - r - 2) / dist, startRatio = r / dist;
+                        const x1 = sx + dx * startRatio, y1 = sy + dy * startRatio,
+                            x2 = sx + dx * ratio, y2 = sy + dy * ratio;
+                        d3.select(this)
+                            .attr("x1", x1).attr("y1", y1)
+                            .attr("x2", x2).attr("y2", y2);
+                    });
             }
-
-            drawMatrixDependencyLinks(); // Desenha as setas de dependência iniciais
+            drawMatrixDependencyLinks();
         }
 
-        // --- CÓDIGO DO DIAGRAMA PRINCIPAL ---
+        // --- Diagrama Principal ---
         const diagramSvg = d3.select("#diagram");
         const diagramG = diagramSvg.append("g");
         const diagramLinkGroup = diagramG.append("g").attr("class", "links");
         const diagramNodeGroup = diagramG.append("g").attr("class", "nodes");
-        const diagramZoom = d3.zoom().scaleExtent([0.15, 3]).on("start", () => diagramSvg.style("cursor", "grabbing")).on("zoom", (event) => diagramG.attr("transform", event.transform)).on("end", () => diagramSvg.style("cursor", "grab"));
+        const diagramZoom = d3.zoom().scaleExtent([0.15, 3])
+            .on("start", () => diagramSvg.style("cursor", "grabbing"))
+            .on("zoom", event => diagramG.attr("transform", event.transform))
+            .on("end", () => diagramSvg.style("cursor", "grab"));
         diagramSvg.call(diagramZoom);
 
         const diagramDefs = diagramG.append("defs");
         diagramDefs.selectAll("marker")
             .data(["mainFlow-arrowhead", "child-arrowhead", "prerequisite-arrowhead"])
-            .enter().append("marker").attr("id", d => d).attr("viewBox", "0 -5 10 10").attr("refX", 6).attr("refY", 0).attr("markerWidth", 6).attr("markerHeight", 6).attr("orient", "auto-start-reverse").append("path").attr("d", "M0,-5L10,0L0,5").attr("fill", d => { if (d === 'child-arrowhead') return '#aaa'; if (d === 'prerequisite-arrowhead') return '#8e44ad'; return '#555'; });
+            .enter().append("marker")
+            .attr("id", d => d)
+            .attr("viewBox", "0 -5 10 10")
+            .attr("refX", 6).attr("refY", 0)
+            .attr("markerWidth", 6).attr("markerHeight", 6)
+            .attr("orient", "auto-start-reverse")
+            .append("path")
+            .attr("d", "M0,-5L10,0L0,5")
+            .attr("fill", d => {
+                if (d === "child-arrowhead") return "#aaa";
+                if (d === "prerequisite-arrowhead") return "#8e44ad";
+                return "#555";
+            });
 
-        // --- Funções do Diagrama Principal ---
         function processData(data) {
-            allNodes = []; nodeDataMap = new Map(); let currentX = horizontalSpacing / 2;
-            diagramData.nodes = data.nodes || []; diagramData.links = data.links || [];
-            allLinks = diagramData.links.filter(link => link.type !== 'feedback'); // Usa links carregados
-            const mainNodes = diagramData.nodes.sort((a, b) => (a.sequenceOrder || Infinity) - (b.sequenceOrder || Infinity)); // Ordena top-level
-
-            function processNode(node, parentId = null, isTopLevel = false) {
-                if (isTopLevel && node.x === undefined) node.x = currentX;
-                if (node.y === undefined) node.y = verticalSpacingBase;
-                node.parent = parentId;
-                node._expanded = (node.children && node.children.length > 0 && node._expanded !== false);
-                node._hidden = !!parentId && !nodeDataMap.get(parentId)?._expanded; // Esconde se pai não expandido
-
-                allNodes.push(node); nodeDataMap.set(node.id, node);
-                if (isTopLevel) currentX += horizontalSpacing;
-                if (node.children && node.children.length > 0) {
-                    // Processa filhos recursivamente
-                    node.children.forEach(child => processNode(child, node.id, false));
-                }
+            allNodes = []; nodeDataMap = new Map();
+            let currX = horizontalSpacing / 2;
+            diagramData.nodes = data.nodes || [];
+            diagramData.links = data.links || [];
+            allLinks = diagramData.links.filter(l => l.type !== "feedback");
+            const mains = diagramData.nodes.sort((a, b) => (a.sequenceOrder || Infinity) - (b.sequenceOrder || Infinity));
+            function recurse(n, parent, isTop) {
+                if (isTop && n.x === undefined) n.x = currX;
+                if (n.y === undefined) n.y = verticalSpacingBase;
+                n.parent = parent;
+                n._expanded = (n.children && n.children.length > 0 && n._expanded !== false);
+                n._hidden = !!parent && !nodeDataMap.get(parent)?._expanded;
+                allNodes.push(n); nodeDataMap.set(n.id, n);
+                if (isTop) currX += horizontalSpacing;
+                if (n.children) n.children.forEach(c => recurse(c, n.id, false));
             }
-            mainNodes.forEach(node => processNode(node, null, true));
-            // calculateLayout(); // Layout será chamado no update inicial
+            mains.forEach(n => recurse(n, null, true));
         }
 
         function calculateLayout() {
-            allNodes.forEach(node => {
-                if (node.parent && !node._hidden) {
-                    const parentNode = nodeDataMap.get(node.parent); if (!parentNode) return;
-                    const parentHeight = parentNode.calculatedHeight || (parentNode.parent ? minChildNodeHeight : minNodeHeight);
-                    const siblings = parentNode.children.map(cId => nodeDataMap.get(cId.id)).filter(c => c && !c._hidden).sort((a, b) => (a.displayOrder || a.order || 0) - (b.displayOrder || b.order || 0)); // Usa displayOrder ou order
-                    const childIndex = siblings.findIndex(s => s.id === node.id);
-                    let childY = parentNode.y + parentHeight / 2 + verticalExpandSpacing;
-                    for (let i = 0; i < childIndex; i++) { const siblingHeight = siblings[i].calculatedHeight || minChildNodeHeight; childY += siblingHeight + childVerticalSpacing; }
-                    const currentChildHeight = node.calculatedHeight || minChildNodeHeight;
-                    node.x = parentNode.x; node.y = childY + currentChildHeight / 2;
-                } else if (!node.parent && node.x === undefined) {
-                    // Nós pais que não tiveram X inicial (não deveria acontecer com processData atual)
-                    const mainNodes = allNodes.filter(n => !n.parent).sort((a, b) => (a.sequenceOrder || Infinity) - (b.sequenceOrder || Infinity));
-                    const nodeIndex = mainNodes.findIndex(n => n.id === node.id);
-                    node.x = (horizontalSpacing / 2) + (nodeIndex * horizontalSpacing);
-                    node.y = verticalSpacingBase;
+            allNodes.forEach(n => {
+                if (n.parent && !n._hidden) {
+                    const p = nodeDataMap.get(n.parent);
+                    if (!p) return;
+                    const ph = p.calculatedHeight || (p.parent ? minChildNodeHeight : minNodeHeight);
+                    const siblings = p.children.map(c => nodeDataMap.get(c.id))
+                        .filter(x => x && !x._hidden)
+                        .sort((a, b) => (a.displayOrder || a.order || 0) - (b.displayOrder || b.order || 0));
+                    const idx = siblings.findIndex(x => x.id === n.id);
+                    let y = p.y + ph / 2 + verticalExpandSpacing;
+                    for (let i = 0; i < idx; i++) {
+                        y += (siblings[i].calculatedHeight || minChildNodeHeight) + childVerticalSpacing;
+                    }
+                    const ch = n.calculatedHeight || minChildNodeHeight;
+                    n.x = p.x; n.y = y + ch / 2;
+                } else if (!n.parent && n.x === undefined) {
+                    const mains = allNodes.filter(x => !x.parent)
+                        .sort((a, b) => (a.sequenceOrder || Infinity) - (b.sequenceOrder || Infinity));
+                    const idx = mains.findIndex(x => x.id === n.id);
+                    n.x = (horizontalSpacing / 2) + (idx * horizontalSpacing);
+                    n.y = verticalSpacingBase;
                 }
             });
         }
 
-        function wrapText(textElement, text, width) { /* ... Sem alterações ... */ const node = d3.select(textElement); node.selectAll("tspan").remove(); if (!text) { node.text(''); return; } const lines = text.split('\n'); const lineHeight = 1.1; lines.forEach((lineText, index) => { const words = lineText.split(/\s+/).filter(w => w.length > 0); let currentLine = []; let tspan = node.append("tspan").attr("x", 0).attr("dy", index === 0 ? "0em" : `${lineHeight}em`); words.forEach(word => { currentLine.push(word); tspan.text(currentLine.join(" ")); if (tspan.node().getComputedTextLength() > width && currentLine.length > 1) { currentLine.pop(); tspan.text(currentLine.join(" ")); currentLine = [word]; tspan = node.append("tspan").attr("x", 0).attr("dy", `${lineHeight}em`).text(word); } }); }); }
-        function updateNodeSize(selection) { /* ... Sem alterações ... */ const tagHeight = 18; const tagPaddingX = 5; const tagGap = 4; const gapAboveTags = 8; selection.each(function (d) { const gNode = d3.select(this); const title = gNode.select("text.node-label"); const comment = gNode.select("text.comment-text"); const titleBBox = title.node().getBBox(); const commentBBox = (comment.node().textContent.trim() !== "") ? comment.node().getBBox() : { width: 0, height: 0, y: 0 }; const paddingX = 15; const paddingYTop = 10; const paddingYBottom = 10; const lineGap = 5; const isChild = !!d.parent; const minWidth = isChild ? childNodeWidth : nodeWidth; const minHeight = isChild ? minChildNodeHeight : minNodeHeight; const hasMetrics = (d.impact != null || d.difficulty != null || d.progress != null); const metricsAreaHeight = hasMetrics ? (gapAboveTags + tagHeight + paddingYBottom) : paddingYBottom; let boxHeight = paddingYTop + titleBBox.height + (commentBBox.height > 0 ? lineGap + commentBBox.height : 0) + metricsAreaHeight; boxHeight = Math.max(minHeight, boxHeight); d.calculatedHeight = boxHeight; const textWidth = Math.max(titleBBox.width, commentBBox.width); let boxWidth = Math.max(minWidth, textWidth + paddingX * 2); if (hasMetrics) { const minTagWidth = 40; const requiredWidthForTags = (minTagWidth * 3) + (tagGap * 2) + (paddingX * 2); boxWidth = Math.max(boxWidth, requiredWidthForTags); } gNode.select("rect").attr("width", boxWidth).attr("height", boxHeight).attr("x", -boxWidth / 2).attr("y", -boxHeight / 2); title.attr("y", -boxHeight / 2 + paddingYTop + titleBBox.height / 2); if (commentBBox.height > 0) { comment.attr("y", -boxHeight / 2 + paddingYTop + titleBBox.height + lineGap + commentBBox.height / 2); } if (hasMetrics) { const bottomEdgeY = boxHeight / 2; const tagsTopY = bottomEdgeY - paddingYBottom - tagHeight; const tagWidth = (boxWidth - paddingX * 2 - tagGap * 2) / 3; const tagCenterY = tagsTopY + tagHeight / 2; const tagX_I = -boxWidth / 2 + paddingX + tagWidth / 2; const tagX_D = tagX_I + tagWidth + tagGap; const tagX_P = tagX_D + tagWidth + tagGap; const impactGrp = gNode.select("g.metric-impact"); impactGrp.style("opacity", d.impact != null ? 1 : 0); if (d.impact != null) { impactGrp.attr("transform", `translate(${tagX_I}, ${tagCenterY})`); impactGrp.select("rect").attr("width", tagWidth).attr("height", tagHeight).attr("x", -tagWidth / 2).attr("y", -tagHeight / 2); impactGrp.select("text").text(`I: ${typeof d.impact === 'number' ? d.impact.toFixed(1) : d.impact}`); } const diffGrp = gNode.select("g.metric-difficulty"); diffGrp.style("opacity", d.difficulty != null ? 1 : 0); if (d.difficulty != null) { diffGrp.attr("transform", `translate(${tagX_D}, ${tagCenterY})`); diffGrp.select("rect").attr("width", tagWidth).attr("height", tagHeight).attr("x", -tagWidth / 2).attr("y", -tagHeight / 2); diffGrp.select("text").text(`D: ${typeof d.difficulty === 'number' ? d.difficulty.toFixed(1) : d.difficulty}`); } const progGrp = gNode.select("g.metric-progress"); progGrp.style("opacity", d.progress != null ? 1 : 0); if (d.progress != null) { progGrp.attr("transform", `translate(${tagX_P}, ${tagCenterY})`); progGrp.select("rect").attr("width", tagWidth).attr("height", tagHeight).attr("x", -tagWidth / 2).attr("y", -tagHeight / 2); progGrp.select("text").text(`P: ${d.progress}%`); } } else { gNode.selectAll(".metric-tag").style("opacity", 0); } });
-        }
-        function updateDiagram() { /* ... Sem alterações ... */ calculateLayout(); const visibleNodes = allNodes.filter(n => !n._hidden); const visibleLinks = generateVisibleLinks(visibleNodes); const nodeSelection = diagramNodeGroup.selectAll("g.node-group").data(visibleNodes, d => d.id); nodeSelection.exit().remove(); const nodeEnter = nodeSelection.enter().append("g").attr("class", d => `node-group ${d.parent ? 'child-node' : 'node'} ${d.type}`).attr("transform", d => `translate(${d.x}, ${d.y})`).on("click", nodeClicked).call(d3.drag().on("start", dragstarted).on("drag", dragged).on("end", dragended)); nodeEnter.append("rect"); nodeEnter.append("text").attr("class", "node-label"); nodeEnter.append("text").attr("class", "comment-text"); const impactTag = nodeEnter.append("g").attr("class", "metric-tag metric-impact"); impactTag.append("rect"); impactTag.append("text"); const difficultyTag = nodeEnter.append("g").attr("class", "metric-tag metric-difficulty"); difficultyTag.append("rect"); difficultyTag.append("text"); const progressTag = nodeEnter.append("g").attr("class", "metric-tag metric-progress"); progressTag.append("rect"); progressTag.append("text"); const nodeUpdate = nodeEnter.merge(nodeSelection); nodeUpdate.transition().duration(350).attr("transform", d => `translate(${d.x}, ${d.y})`); nodeUpdate.select("text.node-label").each(function (d) { const maxWidth = (d.parent ? childNodeWidth : nodeWidth) - 30; wrapText(this, d.label, maxWidth); }); nodeUpdate.select("text.comment-text").each(function (d) { const maxWidth = (d.parent ? childNodeWidth : nodeWidth) - 30; wrapText(this, d.comment || "", maxWidth); }); updateNodeSize(nodeUpdate); nodeUpdate.classed("expanded", d => d._expanded); const linkSelection = diagramLinkGroup.selectAll("path").data(visibleLinks, d => d.id || `${d.source}-${d.target}-${d.type || 'main'}`); linkSelection.exit().remove(); const linkEnter = linkSelection.enter().append("path").attr("class", d => d.type || 'mainFlow').attr("marker-end", d => { const type = d.type || 'mainFlow'; if (type === 'childLink') return "url(#child-arrowhead)"; if (type === 'prerequisite') return "url(#prerequisite-arrowhead)"; return `url(#mainFlow-arrowhead)`; }); linkEnter.merge(linkSelection).transition().duration(350).attr("d", calculateLinkPath); adjustDiagramSvgSize(); }
-        function adjustDiagramSvgSize() { /* ... Sem alterações ... */ let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity; let hasVisibleNodes = false; diagramNodeGroup.selectAll("g.node-group").each(function (d) { if (d._hidden) return; hasVisibleNodes = true; const rect = d3.select(this).select("rect"); const h = d.calculatedHeight || minNodeHeight; const w = +rect.attr("width") || nodeWidth; minX = Math.min(minX, d.x - w / 2); maxX = Math.max(maxX, d.x + w / 2); minY = Math.min(minY, d.y - h / 2); maxY = Math.max(maxY, d.y + h / 2); }); const padding = 60; if (hasVisibleNodes) { const totalWidth = maxX - minX + padding * 2; const totalHeight = maxY - minY + padding * 2; diagramSvg.attr("width", Math.max(1800, totalWidth)).attr("height", Math.max(1200, totalHeight)).attr("viewBox", `${minX - padding} ${minY - padding} ${totalWidth} ${totalHeight}`); } else { diagramSvg.attr("width", 1800).attr("height", 1200).attr("viewBox", `0 0 1800 1200`); } }
-        function nodeClicked(event, d) { /* ... Sem alterações ... */ if (event.defaultPrevented) return; const node = nodeDataMap.get(d.id); if (node && node.children && node.children.length > 0) { node._expanded = !node._expanded; node.children.forEach(childObj => { const child = nodeDataMap.get(childObj.id); if (child) child._hidden = !node._expanded; }); updateDiagram(); } }
-        let dragStartX, dragStartY;
-        function dragstarted(event, d) { /* ... Sem alterações ... */ event.sourceEvent.stopPropagation(); diagramSvg.style("cursor", "grabbing"); dragStartX = event.x; dragStartY = event.y; d3.select(this).raise().classed("active", true); }
-        function dragged(event, d) { /* ... Sem alterações ... */ const node = nodeDataMap.get(d.id); if (!node) return; const dx = event.x - node.x; const dy = event.y - node.y; node.x = event.x; node.y = event.y; d3.select(this).attr("transform", `translate(${node.x}, ${node.y})`); if (!node.parent && node._expanded) { node.children.forEach(cId => { const childData = nodeDataMap.get(cId.id); if (childData && !childData._hidden) { childData.x += dx; childData.y += dy; diagramNodeGroup.selectAll('g.node-group').filter(n => n.id === childData.id).attr("transform", `translate(${childData.x}, ${childData.y})`); } }); } updateVisibleLinks(node.id); if (!node.parent && node._expanded) updateVisibleLinks(); }
-        function dragended(event, d) { /* ... Sem alterações ... */ diagramSvg.style("cursor", "grab"); d3.select(this).classed("active", false); /* Não chama updateDiagram() */ /* Opcional: Chamar saveDataToSheet() aqui também se quiser salvar posição do diagrama */ /* saveDataToSheet(); */ }
-        function updateVisibleLinks(movedNodeId = null) { /* ... Sem alterações ... */ const visibleNodes = allNodes.filter(n => !n._hidden); let linksData = generateVisibleLinks(visibleNodes); if (movedNodeId) { linksData = linksData.filter(l => { const sourceId = typeof l.source === 'object' ? l.source.id : l.source; const targetId = typeof l.target === 'object' ? l.target.id : l.target; let include = (sourceId === movedNodeId || targetId === movedNodeId); const movedNode = nodeDataMap.get(movedNodeId); if (movedNode && !movedNode.parent && movedNode.children) { const childrenIds = new Set(movedNode.children.map(c => nodeDataMap.get(c.id)?.id).filter(Boolean)); if (childrenIds.has(sourceId) || childrenIds.has(targetId)) { include = true; } } return include; }); } diagramLinkGroup.selectAll("path").data(linksData, d => d.id || `${d.source}-${d.target}-${d.type || 'main'}`).attr("d", calculateLinkPath); }
-        function calculateLinkPath(d) { /* ... Sem alterações ... */ const sourceId = typeof d.source === 'object' ? d.source.id : d.source; const targetId = typeof d.target === 'object' ? d.target.id : d.target; const sourceNode = nodeDataMap.get(sourceId); const targetNode = nodeDataMap.get(targetId); if (!sourceNode || !targetNode || sourceNode._hidden || targetNode._hidden) return "M0,0"; const sourceIsChild = !!sourceNode.parent; const targetIsChild = !!targetNode.parent; const sourceH = sourceNode.calculatedHeight || (sourceIsChild ? minChildNodeHeight : minNodeHeight); const targetH = targetNode.calculatedHeight || (targetIsChild ? minChildNodeHeight : minNodeHeight); const sourceRect = d3.select(diagramNodeGroup.selectAll('g.node-group').filter(n => n.id === sourceNode.id).node()).select('rect'); const targetRect = d3.select(diagramNodeGroup.selectAll('g.node-group').filter(n => n.id === targetNode.id).node()).select('rect'); const sourceW = sourceRect.empty() ? (sourceIsChild ? childNodeWidth : nodeWidth) : +sourceRect.attr('width'); const targetW = targetRect.empty() ? (targetIsChild ? childNodeWidth : nodeWidth) : +targetRect.attr('width'); const sx = sourceNode.x; const sy = sourceNode.y; const tx = targetNode.x; const ty = targetNode.y; const dx = tx - sx; const dy = ty - sy; let startOffsetX = 0, startOffsetY = 0; let endOffsetX = 0, endOffsetY = 0;
-            if (d.type === 'childLink') { startOffsetY = sourceH / 2; endOffsetY = -targetH / 2; startOffsetX = 0.1; endOffsetX = 0.1; }
-            else { if (dx === 0 && dy === 0) return "M0,0"; const angle = Math.atan2(dy, dx); const tanAngle = Math.tan(angle); if (Math.abs(dy / dx) < sourceH / sourceW) { startOffsetX = Math.sign(dx) * sourceW / 2; startOffsetY = startOffsetX * tanAngle; } else { startOffsetY = Math.sign(dy) * sourceH / 2; startOffsetX = startOffsetY / tanAngle; } if (Math.abs(dy / dx) < targetH / targetW) { endOffsetX = -Math.sign(dx) * targetW / 2; endOffsetY = endOffsetX * tanAngle; } else { endOffsetY = -Math.sign(dy) * targetH / 2; endOffsetX = endOffsetY / tanAngle; } startOffsetX = isFinite(startOffsetX) ? startOffsetX : 0; startOffsetY = isFinite(startOffsetY) ? startOffsetY : 0; endOffsetX = isFinite(endOffsetX) ? endOffsetX : 0; endOffsetY = isFinite(endOffsetY) ? endOffsetY : 0; }
-            const adjustedSX = sx + startOffsetX; const adjustedSY = sy + startOffsetY; const adjustedTX = tx + endOffsetX; const adjustedTY = ty + endOffsetY; return `M${adjustedSX},${adjustedSY}L${adjustedTX},${adjustedTY}`;
-        }
-        function generateVisibleLinks(visibleNodes) { /* ... Sem alterações ... */ const visibleNodeIds = new Set(visibleNodes.map(n => n.id)); const linksToDraw = []; allLinks.forEach(linkDef => { if (visibleNodeIds.has(linkDef.source) && visibleNodeIds.has(linkDef.target)) { linksToDraw.push({ ...linkDef, id: `link-${linkDef.source}-${linkDef.target}-${linkDef.type || 'main'}` }); } }); visibleNodes.filter(n => n._expanded && n.children && n.children.length > 0).forEach(parent => { const children = parent.children.map(c => nodeDataMap.get(c.id)).filter(c => c && !c._hidden).sort((a, b) => (a.order || 0) - (b.order || 0)); children.forEach((child, index) => { linksToDraw.push({ source: parent.id, target: child.id, type: 'childLink', id: `link-${parent.id}-${child.id}-child` }); if (parent.childrenLayout === 'vertical-sequence' && index < children.length - 1) { linksToDraw.push({ source: child.id, target: children[index + 1].id, type: 'childLink', id: `link-${child.id}-${children[index + 1].id}-seq` }); } }); }); visibleNodes.forEach(node => { if (node.prerequisites && Array.isArray(node.prerequisites)) { node.prerequisites.forEach(prereqId => { const sourceNode = nodeDataMap.get(prereqId); if (sourceNode && visibleNodeIds.has(sourceNode.id)) { linksToDraw.push({ source: sourceNode.id, target: node.id, type: 'prerequisite', id: `link-${sourceNode.id}-${node.id}-prereq` }); } }); } }); return linksToDraw; }
-
-        // --- Data Handling Helper ---
-        function findNodeById(id) { // Simplificado para buscar em allNodes
-            return allNodes.find(n => n.id === id);
-        }
-
-        // --- Fetch Initial Data ---
-        function loadDataAndInitialize() {
-            console.log("Carregando dados iniciais via Apps Script...");
-            const loading = d3.select('body').append('div').attr('id', 'loading-indicator').style('position', 'fixed').style('top', '50%').style('left', '50%').style('transform', 'translate(-50%, -50%)').style('padding', '10px').style('background', 'rgba(0,0,0,0.7)').style('color', 'white').style('border-radius', '5px').text('Carregando dados...');
-            if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === "COLE_A_URL_DO_SEU_APLICATIVO_WEB_APPS_SCRIPT_AQUI") { alert("Erro: A URL do Google Apps Script não foi definida."); loading.remove(); return; }
-            fetch(APPS_SCRIPT_URL).then(response => { if (!response.ok) { throw new Error(`HTTP error! status: ${response.status}`); } return response.json(); }).then(data => { console.log("Dados recebidos:", data); if (data.error) { console.error("Erro do Apps Script:", data.error, data.details); alert(`Erro ao carregar dados: ${data.error}\nDetalhes: ${data.details || 'N/A'}`); diagramData = { nodes: [], links: [] }; } else if (!data || !Array.isArray(data.nodes)) { console.error("Formato inválido:", data); alert("Erro: Formato de dados recebido é inválido."); diagramData = { nodes: [], links: [] }; } else { diagramData = data; } }).catch(error => { console.error("Erro no fetch inicial:", error); alert("Falha grave ao carregar dados. Verifique a URL e permissões."); diagramData = { nodes: [], links: [] }; }).finally(() => { loading.remove(); processData(diagramData); drawImpactDifficultyMatrix(); updateDiagram(); });
-        }
-
-        // --- Save Data Function ---
-        // --- Save Data Function (MODIFICADA para chamar Netlify Function) ---
-                    function saveDataToSheet(changedNodeData) {
-                        // Verificação inicial mantida
-                        if (!changedNodeData || !changedNodeData.id || changedNodeData.impact == null || changedNodeData.difficulty == null) {
-                            console.error("Dados insuficientes para salvar:", changedNodeData);
-                            alert("Erro interno: Não foi possível determinar quais dados salvar.");
-                            return;
-                        }
-
-                        console.log(`Salvando alterações para ${changedNodeData.id} via Netlify Function...`);
-                        const savingIndicator = d3.select('body').append('div') // ... (código do indicador de salvamento)
-                            .attr('id', 'saving-indicator').style('position', 'fixed').style('bottom', '10px').style('right', '10px').style('background-color', 'rgba(0,0,0,0.7)').style('color', 'white').style('padding', '5px 10px').style('border-radius', '3px').text('Salvando...');
-
-                        // Payload JSON a ser enviado
-                        const payload = {
-                            id: changedNodeData.id,
-                            impact: changedNodeData.impact,
-                            difficulty: changedNodeData.difficulty
-                            // Adicione outros campos aqui se precisar salvar mais tarde
-                            // progress: changedNodeData.progress
-                        };
-
-                        // --- MUDANÇAS AQUI: Chama Netlify Function com JSON ---
-                        fetch('/.netlify/functions/save-data', { // Caminho relativo da função
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json', // Define o tipo como JSON
-                            },
-                            body: JSON.stringify(payload) // Envia o objeto como string JSON
-                        })
-                            // ----------------------------------------------------
-                            .then(response => { // Tratamento da resposta (mantido igual)
-                                if (!response.ok) {
-                                    return response.json().then(errData => { throw new Error(`Erro ${response.status}: ${errData.error || response.statusText}`); }).catch(() => { throw new Error(`Erro HTTP ${response.status}: ${response.statusText}`); });
-                                }
-                                return response.json();
-                            })
-                            .then(data => { // Tratamento do resultado (mantido igual)
-                                if (data.success) { console.log("Dados salvos (via Netlify Function):", data.message); savingIndicator.text('Salvo!').style('background-color', 'rgba(0, 128, 0, 0.7)').transition().delay(1500).remove(); }
-                                else { console.error("Falha ao salvar (Apps Script via Netlify):", data.error, data.details); alert(`Erro ao salvar dados: ${data.error}\nDetalhes: ${data.details || 'N/A'}`); savingIndicator.text('Erro ao salvar!').style('background-color', 'rgba(200, 0, 0, 0.7)').transition().delay(3000).remove(); }
-                            })
-                            .catch(error => { // Tratamento de erro de fetch (mantido igual)
-                                console.error("Erro no fetch para Netlify Function:", error); alert(`Falha grave ao salvar dados: ${error.message}`); savingIndicator.text('Erro de rede!').style('background-color', 'rgba(200, 0, 0, 0.7)').transition().delay(3000).remove();
-                            });
+        function wrapText(el, text, width) {
+            const node = d3.select(el);
+            node.selectAll("tspan").remove();
+            if (!text) { node.text(""); return; }
+            const lines = text.split("\n"), lh = 1.1;
+            lines.forEach((line, i) => {
+                const words = line.split(/\s+/).filter(w => w);
+                let cur = [], tspan = node.append("tspan").attr("x", 0).attr("dy", i === 0 ? "0em" : `${lh}em`);
+                words.forEach(w => {
+                    cur.push(w); tspan.text(cur.join(" "));
+                    if (tspan.node().getComputedTextLength() > width && cur.length > 1) {
+                        cur.pop(); tspan.text(cur.join(" "));
+                        cur = [w];
+                        tspan = node.append("tspan").attr("x", 0).attr("dy", `${lh}em`).text(w);
                     }
+                });
+            });
+        }
 
-        // --- Inicialização ---
+        function updateNodeSize(sel) {
+            const th = 18, pg = 4, pX = 15, pYT = 10, pYB = 10, lg = 5;
+            sel.each(function (d) {
+                const g = d3.select(this),
+                    title = g.select("text.node-label"),
+                    comment = g.select("text.comment-text"),
+                    tBB = title.node().getBBox(),
+                    cBB = comment.node().textContent.trim() ? comment.node().getBBox() : { width: 0, height: 0 };
+                const isChild = !!d.parent;
+                const minW = isChild ? childNodeWidth : nodeWidth,
+                    minH = isChild ? minChildNodeHeight : minNodeHeight;
+                const hasMetrics = (d.impact != null || d.difficulty != null || d.progress != null);
+                const metricsH = hasMetrics ? (th + pYB + pg) : pYB;
+                let boxH = pYT + tBB.height + (cBB.height ? lg + cBB.height : 0) + metricsH;
+                boxH = Math.max(minH, boxH);
+                d.calculatedHeight = boxH;
+                const textW = Math.max(tBB.width, cBB.width);
+                let boxW = Math.max(minW, textW + pX * 2);
+                if (hasMetrics) {
+                    const minTagW = 40;
+                    const reqW = minTagW * 3 + pg * 2 + pX * 2;
+                    boxW = Math.max(boxW, reqW);
+                }
+                g.select("rect")
+                    .attr("width", boxW)
+                    .attr("height", boxH)
+                    .attr("x", -boxW / 2)
+                    .attr("y", -boxH / 2);
+                title.attr("y", -boxH / 2 + pYT + tBB.height / 2);
+                if (cBB.height) comment.attr("y", -boxH / 2 + pYT + tBB.height + lg + cBB.height / 2);
+                if (hasMetrics) {
+                    const bY = boxH / 2, tagY = bY - pYB - th / 2,
+                        tagW = (boxW - pX * 2 - pg * 2) / 3,
+                        xs = [-boxW / 2 + pX + tagW / 2, -boxW / 2 + pX + tagW / 2 + tagW + pg, -boxW / 2 + pX + tagW / 2 + 2 * (tagW + pg)];
+                    const grps = [g.select("g.metric-impact"), g.select("g.metric-difficulty"), g.select("g.metric-progress")];
+                    const vals = [d.impact, d.difficulty, d.progress];
+                    grps.forEach((grp, i) => {
+                        if (vals[i] != null) {
+                            grp.style("opacity", 1)
+                                .attr("transform", `translate(${xs[i]},${tagY})`);
+                            grp.select("rect")
+                                .attr("width", tagW)
+                                .attr("height", th)
+                                .attr("x", -tagW / 2)
+                                .attr("y", -th / 2);
+                            const txt = grp.select("text");
+                            if (i < 2) txt.text(`${i === 0 ? "I" : "D"}: ${typeof vals[i] === "number" ? vals[i].toFixed(1) : vals[i]}`);
+                            else txt.text(`P: ${vals[i]}%`);
+                        } else grp.style("opacity", 0);
+                    });
+                } else g.selectAll(".metric-tag").style("opacity", 0);
+            });
+        }
+
+        function updateDiagram() {
+            calculateLayout();
+            const vis = allNodes.filter(n => !n._hidden),
+                links = generateVisibleLinks(vis);
+            // Nodes
+            const sel = diagramNodeGroup.selectAll("g.node-group").data(vis, d => d.id);
+            sel.exit().remove();
+            const ent = sel.enter().append("g")
+                .attr("class", d => `node-group ${d.parent ? "child-node" : "node"} ${d.type}`)
+                .attr("transform", d => `translate(${d.x},${d.y})`)
+                .on("click", nodeClicked)
+                .call(d3.drag().on("start", dragstarted).on("drag", dragged).on("end", dragended));
+            ent.append("rect");
+            ent.append("text").attr("class", "node-label");
+            ent.append("text").attr("class", "comment-text");
+            ["impact", "difficulty", "progress"].forEach(type => {
+                const grp = ent.append("g").attr("class", `metric-tag metric-${type}`);
+                grp.append("rect");
+                grp.append("text");
+            });
+            const upd = ent.merge(sel);
+            upd.transition().duration(350).attr("transform", d => `translate(${d.x},${d.y})`);
+            upd.select("text.node-label").each(function (d) {
+                const mw = (d.parent ? childNodeWidth : nodeWidth) - 30;
+                wrapText(this, d.label, mw);
+            });
+            upd.select("text.comment-text").each(function (d) {
+                const mw = (d.parent ? childNodeWidth : nodeWidth) - 30;
+                wrapText(this, d.comment || "", mw);
+            });
+            updateNodeSize(upd);
+            upd.classed("expanded", d => d._expanded);
+            // Links
+            const lsel = diagramLinkGroup.selectAll("path").data(links, d => d.id);
+            lsel.exit().remove();
+            const lent = lsel.enter().append("path")
+                .attr("class", d => d.type || "mainFlow")
+                .attr("marker-end", d => {
+                    const t = d.type || "mainFlow";
+                    if (t === "childLink") return "url(#child-arrowhead)";
+                    if (t === "prerequisite") return "url(#prerequisite-arrowhead)";
+                    return "url(#mainFlow-arrowhead)";
+                });
+            lent.merge(lsel).transition().duration(350).attr("d", calculateLinkPath);
+            adjustDiagramSvgSize();
+        }
+
+        function adjustDiagramSvgSize() {
+            let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+            let has = false;
+            diagramNodeGroup.selectAll("g.node-group").each(function (d) {
+                if (d._hidden) return;
+                has = true;
+                const rect = d3.select(this).select("rect"),
+                    h = d.calculatedHeight || minNodeHeight,
+                    w = +rect.attr("width") || nodeWidth;
+                minX = Math.min(minX, d.x - w / 2);
+                maxX = Math.max(maxX, d.x + w / 2);
+                minY = Math.min(minY, d.y - h / 2);
+                maxY = Math.max(maxY, d.y + h / 2);
+            });
+            const pad = 60;
+            if (has) {
+                const totalW = maxX - minX + pad * 2,
+                    totalH = maxY - minY + pad * 2;
+                diagramSvg
+                    .attr("width", Math.max(1800, totalW))
+                    .attr("height", Math.max(1200, totalH))
+                    .attr("viewBox", `${minX - pad} ${minY - pad} ${totalW} ${totalH}`);
+            } else {
+                diagramSvg
+                    .attr("width", 1800)
+                    .attr("height", 1200)
+                    .attr("viewBox", "0 0 1800 1200");
+            }
+        }
+
+        function nodeClicked(event, d) {
+            if (event.defaultPrevented) return;
+            const n = nodeDataMap.get(d.id);
+            if (n && n.children) {
+                n._expanded = !n._expanded;
+                n.children.forEach(c => {
+                    const ch = nodeDataMap.get(c.id);
+                    if (ch) ch._hidden = !n._expanded;
+                });
+                updateDiagram();
+            }
+        }
+
+        let dragStartX, dragStartY;
+        function dragstarted(event, d) {
+            event.sourceEvent.stopPropagation();
+            diagramSvg.style("cursor", "grabbing");
+            dragStartX = event.x; dragStartY = event.y;
+            d3.select(this).raise().classed("active", true);
+        }
+        function dragged(event, d) {
+            const n = nodeDataMap.get(d.id);
+            if (!n) return;
+            const dx = event.x - n.x, dy = event.y - n.y;
+            n.x = event.x; n.y = event.y;
+            d3.select(this).attr("transform", `translate(${n.x},${n.y})`);
+            if (!n.parent && n._expanded) {
+                n.children.forEach(c => {
+                    const ch = nodeDataMap.get(c.id);
+                    if (ch && !ch._hidden) {
+                        ch.x += dx; ch.y += dy;
+                        diagramNodeGroup.selectAll("g.node-group")
+                            .filter(x => x.id === ch.id)
+                            .attr("transform", `translate(${ch.x},${ch.y})`);
+                    }
+                });
+            }
+            updateVisibleLinks(d.id);
+            if (!n.parent && n._expanded) updateVisibleLinks();
+        }
+        function dragended(event, d) {
+            diagramSvg.style("cursor", "grab");
+            d3.select(this).classed("active", false);
+        }
+
+        function updateVisibleLinks(movedId = null) {
+            const vis = allNodes.filter(n => !n._hidden);
+            let links = generateVisibleLinks(vis);
+            if (movedId) {
+                links = links.filter(l => {
+                    const s = typeof l.source === "object" ? l.source.id : l.source;
+                    const t = typeof l.target === "object" ? l.target.id : l.target;
+                    let inc = s === movedId || t === movedId;
+                    const mn = nodeDataMap.get(movedId);
+                    if (mn && !mn.parent && mn.children) {
+                        const chs = new Set(mn.children.map(c => nodeDataMap.get(c.id)?.id).filter(Boolean));
+                        if (chs.has(s) || chs.has(t)) inc = true;
+                    }
+                    return inc;
+                });
+            }
+            diagramLinkGroup.selectAll("path")
+                .data(links, d => d.id)
+                .attr("d", calculateLinkPath);
+        }
+
+        function calculateLinkPath(d) {
+            const sid = typeof d.source === "object" ? d.source.id : d.source;
+            const tid = typeof d.target === "object" ? d.target.id : d.target;
+            const sn = nodeDataMap.get(sid), tn = nodeDataMap.get(tid);
+            if (!sn || !tn || sn._hidden || tn._hidden) return "M0,0";
+            const sChild = !!sn.parent, tChild = !!tn.parent;
+            const sh = sn.calculatedHeight || (sChild ? minChildNodeHeight : minNodeHeight);
+            const th = tn.calculatedHeight || (tChild ? minChildNodeHeight : minNodeHeight);
+            const sx = sn.x, sy = sn.y, tx = tn.x, ty = tn.y;
+            const dx = tx - sx, dy = ty - sy;
+            let sxOff = 0, syOff = 0, txOff = 0, tyOff = 0;
+            if (d.type === "childLink") {
+                syOff = sh / 2; tyOff = -th / 2; sxOff = 0.1; txOff = 0.1;
+            } else {
+                if (dx === 0 && dy === 0) return "M0,0";
+                const angle = Math.atan2(dy, dx), tan = dy / dx;
+                if (Math.abs(dy / dx) < sh / (sChild ? childNodeWidth : nodeWidth)) {
+                    sxOff = Math.sign(dx) * (sChild ? childNodeWidth : nodeWidth) / 2;
+                    syOff = sxOff * tan;
+                } else {
+                    syOff = Math.sign(dy) * sh / 2;
+                    sxOff = syOff / tan;
+                }
+                if (Math.abs(dy / dx) < th / (tChild ? childNodeWidth : nodeWidth)) {
+                    txOff = -Math.sign(dx) * (tChild ? childNodeWidth : nodeWidth) / 2;
+                    tyOff = txOff * tan;
+                } else {
+                    tyOff = -Math.sign(dy) * th / 2;
+                    txOff = tyOff / tan;
+                }
+                sxOff = isFinite(sxOff) ? sxOff : 0;
+                syOff = isFinite(syOff) ? syOff : 0;
+                txOff = isFinite(txOff) ? txOff : 0;
+                tyOff = isFinite(tyOff) ? tyOff : 0;
+            }
+            const x1 = sx + sxOff, y1 = sy + syOff, x2 = tx + txOff, y2 = ty + tyOff;
+            return `M${x1},${y1}L${x2},${y2}`;
+        }
+
+        function generateVisibleLinks(vis) {
+            const ids = new Set(vis.map(n => n.id));
+            const links = [];
+            allLinks.forEach(l => {
+                if (ids.has(l.source) && ids.has(l.target)) {
+                    links.push({ ...l, id: `link-${l.source}-${l.target}-${l.type || 'main'}` });
+                }
+            });
+            vis.filter(n => n._expanded && n.children).forEach(p => {
+                const chs = p.children.map(c => nodeDataMap.get(c.id))
+                    .filter(x => x && !x._hidden)
+                    .sort((a, b) => (a.order || 0) - (b.order || 0));
+                chs.forEach((c, i) => {
+                    links.push({ source: p.id, target: c.id, type: 'childLink', id: `link-${p.id}-${c.id}-child` });
+                    if (p.childrenLayout === 'vertical-sequence' && i < chs.length - 1) {
+                        links.push({ source: c.id, target: chs[i + 1].id, type: 'childLink', id: `link-${c.id}-${chs[i + 1].id}-seq` });
+                    }
+                });
+            });
+            vis.forEach(n => {
+                if (n.prerequisites) n.prerequisites.forEach(pr => {
+                    const src = nodeDataMap.get(pr);
+                    if (src && ids.has(src.id)) {
+                        links.push({ source: src.id, target: n.id, type: 'prerequisite', id: `link-${src.id}-${n.id}-prereq` });
+                    }
+                });
+            });
+            return links;
+        }
+
+        function findNodeById(id) { return allNodes.find(n => n.id === id); }
+
+        // --- Fetch e Inicialização ---
+        function loadDataAndInitialize() {
+            const loading = d3.select('body').append('div')
+                .attr('id', 'loading-indicator')
+                .style('position', 'fixed')
+                .style('top', '50%')
+                .style('left', '50%')
+                .style('transform', 'translate(-50%,-50%)')
+                .style('padding', '10px')
+                .style('background', 'rgba(0,0,0,0.7)')
+                .style('color', '#fff')
+                .style('border-radius', '5px')
+                .text('Carregando dados...');
+            if (!APPS_SCRIPT_URL) {
+                alert('Erro: URL do Apps Script não definida.');
+                loading.remove();
+                return;
+            }
+            fetch(APPS_SCRIPT_URL)
+                .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+                .then(data => {
+                    if (data.error) {
+                        alert(`Erro ao carregar dados: ${data.error}`);
+                        diagramData = { nodes: [], links: [] };
+                    } else {
+                        diagramData = data;
+                    }
+                })
+                .catch(e => {
+                    alert(`Falha ao carregar dados: ${e.message}`);
+                    diagramData = { nodes: [], links: [] };
+                })
+                .finally(() => {
+                    loading.remove();
+                    processData(diagramData);
+                    drawImpactDifficultyMatrix();
+                    updateDiagram();
+                    drawPriorityTable();
+                });
+        }
+
+        function saveDataToSheet(changed) {
+            if (!changed || !changed.id || changed.impact == null || changed.difficulty == null) {
+                alert('Erro interno: dados insuficientes para salvar.');
+                return;
+            }
+            const saving = d3.select('body').append('div')
+                .attr('id', 'saving-indicator')
+                .style('position', 'fixed')
+                .style('bottom', '10px')
+                .style('right', '10px')
+                .style('background-color', 'rgba(0,0,0,0.7)')
+                .style('color', '#fff')
+                .style('padding', '5px 10px')
+                .style('border-radius', '3px')
+                .text('Salvando...');
+            const payload = { id: changed.id, impact: changed.impact, difficulty: changed.difficulty };
+            fetch('/.netlify/functions/save-data', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+                .then(r => {
+                    if (!r.ok) return r.json().then(err => { throw new Error(err.error || r.statusText); });
+                    return r.json();
+                })
+                .then(res => {
+                    if (res.success) {
+                        saving.text('Salvo!').style('background-color', 'rgba(0,128,0,0.7)').transition().delay(1500).remove();
+                    } else {
+                        alert(`Erro ao salvar dados: ${res.error}`);
+                        saving.text('Erro!').style('background-color', 'rgba(200,0,0,0.7)').transition().delay(3000).remove();
+                    }
+                })
+                .catch(e => {
+                    alert(`Falha de rede: ${e.message}`);
+                    saving.text('Erro!').style('background-color', 'rgba(200,0,0,0.7)').transition().delay(3000).remove();
+                });
+        }
+
+        // Inicializa tudo
         loadDataAndInitialize();
-
     </script>
 </body>
 
