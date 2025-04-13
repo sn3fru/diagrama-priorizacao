@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagrama Conceitual (c/ Pré-req) e Matriz Editável (Filhos)</title>
+    <style>
+        /* --- Estilos Gerais --- */
+        body {
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px;
+            background-color: #f0f0f0;
+        }
+
+        h1,
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        h1 {
+            font-size: 1.6em;
+            margin-bottom: 5px;
+        }
+
+        h2 {
+            font-size: 1.3em;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+
+        /* --- Container da Matriz --- */
+        #matrix-container {
+            width: 95%;
+            max-width: 800px;
+            height: 450px;
+            border: 1px solid #ccc;
+            margin-bottom: 25px;
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        #impact-difficulty-matrix {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* --- Estilos da Matriz (SVG) --- */
+        .matrix-axis path,
+        .matrix-axis line {
+            fill: none;
+            stroke: #555;
+            stroke-width: 1px;
+            shape-rendering: crispEdges;
+        }
+
+        .matrix-axis .tick text {
+            font-size: 10px;
+            fill: #444;
+        }
+
+        .matrix-axis-label {
+            font-size: 12px;
+            font-weight: 500;
+            fill: #333;
+            text-anchor: middle;
+        }
+
+        .quadrant-line {
+            stroke: #aaa;
+            stroke-width: 1px;
+            stroke-dasharray: 3, 3;
+        }
+
+        .matrix-dot {
+            stroke: #333;
+            stroke-width: 0.5px;
+            cursor: move;
+            opacity: 0.8;
+            transition: opacity 0.2s, r 0.2s;
+        }
+
+        .matrix-dot:hover {
+            opacity: 1;
+            stroke-width: 1.5px;
+            r: 7;
+        }
+
+        .matrix-dot.dragging {
+            opacity: 1;
+            stroke: #3498db;
+            stroke-width: 1.5px;
+        }
+
+        .matrix-dot.current {
+            fill: #5DADE2;
+        }
+
+        .matrix-dot.proposed {
+            fill: #AEB6BF;
+        }
+
+        .matrix-label {
+            font-size: 9px;
+            fill: #333;
+            pointer-events: none;
+            text-anchor: middle;
+            dominant-baseline: central;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        /* NOVO: Estilo para setas de dependência na matriz */
+        .matrix-dependency-link {
+            stroke: #666;
+            stroke-width: 0.8px;
+            opacity: 0.7;
+        }
+
+        /* --- Tooltip da Matriz --- */
+        #matrix-tooltip {
+            position: absolute;
+            opacity: 0;
+            background-color: rgba(40, 40, 40, 0.9);
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            pointer-events: none;
+            transition: opacity 0.2s ease-out;
+            white-space: pre-wrap;
+            max-width: 250px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+        }
+
+        #matrix-tooltip strong {
+            color: #aed6f1;
+        }
+
+        /* --- Container do Diagrama Principal --- */
+        #diagram-container {
+            width: 95%;
+            max-width: 1600px;
+            height: 75vh;
+            border: 1px solid #ccc;
+            overflow: auto;
+            background-color: #fdfdfd;
+            position: relative;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        #diagram {
+            display: block;
+            width: 1800px;
+            height: 1200px;
+            cursor: grab;
+        }
+
+        #diagram.grabbing {
+            cursor: grabbing;
+        }
+
+        /* --- Estilos do Diagrama Principal --- */
+        .node-group,
+        .child-node-group {
+            cursor: pointer;
+        }
+
+        .node rect,
+        .child-node rect {
+            stroke-width: 1.5px;
+            rx: 5;
+            ry: 5;
+            shape-rendering: geometricPrecision;
+        }
+
+        .node-group.active>rect,
+        .child-node-group.active>rect {
+            stroke: #3498db;
+            stroke-width: 2.5px;
+            filter: drop-shadow(3px 5px 2px rgb(0 0 0 / 0.2));
+        }
+
+        .node.current>rect {
+            fill: #D6EAF8;
+            stroke: #5DADE2;
+        }
+
+        .node.proposed>rect {
+            fill: #EAECEE;
+            stroke: #AEB6BF;
+            stroke-dasharray: 5, 5;
+        }
+
+        .child-node.current>rect {
+            fill: #EBF5FB;
+            stroke: #A9CCE3;
+        }
+
+        .child-node.proposed>rect {
+            fill: #F8F9F9;
+            stroke: #D5DBDB;
+            stroke-dasharray: 3, 3;
+        }
+
+        .node-label,
+        .comment-text,
+        .metric-tag text {
+            pointer-events: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .node-label {
+            font-size: 11px;
+            fill: #1A5276;
+            text-anchor: middle;
+            font-weight: 600;
+        }
+
+        .comment-text {
+            font-size: 9.5px;
+            fill: #34495E;
+            text-anchor: middle;
+            font-weight: 400;
+        }
+
+        .metric-tag rect {
+            rx: 4;
+            ry: 4;
+            stroke: #444;
+            stroke-width: 0.5px;
+            shape-rendering: geometricPrecision;
+        }
+
+        .metric-impact rect {
+            fill: #AED6F1;
+        }
+
+        .metric-difficulty rect {
+            fill: #F5B7B1;
+        }
+
+        .metric-progress rect {
+            fill: #A9DFBF;
+        }
+
+        .metric-tag text {
+            font-size: 9px;
+            font-weight: 500;
+            fill: #212121;
+            text-anchor: middle;
+            dominant-baseline: middle;
+        }
+
+        /* Link Styles */
+        .link,
+        .mainFlow,
+        .childLink,
+        .prerequisite {
+            fill: none;
+            pointer-events: none;
+        }
+
+        .link,
+        .mainFlow {
+            stroke: #555;
+            stroke-width: 1.5px;
+        }
+
+        .childLink {
+            stroke: #aaa;
+            stroke-width: 1px;
+        }
+
+        /* Classe é childLink */
+        .prerequisite {
+            stroke: #8e44ad;
+            stroke-width: 1.3px;
+            stroke-dasharray: 5, 3;
+            opacity: 0.8;
+        }
+
+        /* Classe é prerequisite */
+
+        /* Legends */
+        #legend,
+        #legend2 {
+            position: absolute;
+            left: 10px;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        #legend {
+            top: 10px;
+            font-size: 11px;
+            margin-bottom: 5px;
+        }
+
+        #legend2 {
+            top: 140px;
+            font-size: 11px;
+        }
+
+        #legend .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .legend-color {
+            width: 18px;
+            height: 12px;
+            margin-right: 6px;
+            border: 1px solid #555;
+        }
+
+        .legend-color.current {
+            background-color: #D6EAF8;
+        }
+
+        .legend-color.proposed {
+            background-color: #EAECEE;
+            border-style: dashed;
+        }
+
+        #legend2 .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .legend-tag-color {
+            display: inline-block;
+            width: 25px;
+            height: 15px;
+            margin-right: 6px;
+            border-radius: 4px;
+            border: 0.5px solid #444;
+            vertical-align: middle;
+        }
+
+        .legend-tag-color.metric-impact {
+            background-color: #AED6F1;
+        }
+
+        .legend-tag-color.metric-difficulty {
+            background-color: #F5B7B1;
+        }
+
+        .legend-tag-color.metric-progress {
+            background-color: #A9DFBF;
+        }
+
+        .legend-line {
+            stroke-linecap: round;
+        }
+
+        .prerequisite.legend-line {
+            stroke: #8e44ad;
+            stroke-dasharray: none;
+            stroke-width: 1.5px;
+        }
+
+        .mainFlow.legend-line {
+            stroke: #555;
+            stroke-width: 1.5px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Precificação Dinâmica - Componentes e Priorização</h1>
+
+    <h2>Matriz Impacto x Dificuldade (Tarefas)</h2>
+    <div id="matrix-container">
+        <svg id="impact-difficulty-matrix"></svg>
+        <div id="matrix-tooltip"></div>
+    </div>
+
+    <h2>Diagrama Conceitual Interativo</h2>
+    <div id="diagram-container">
+        <svg id="diagram"></svg>
+        <div id="legend">
+            <div><strong>Legenda Diagrama:</strong></div>
+            <div class="legend-item">
+                <div class="legend-color current"></div> Bloco/Comp. Atual
+            </div>
+            <div class="legend-item">
+                <div class="legend-color proposed"></div> Bloco/Comp. Proposto
+            </div>
+            <div class="legend-item">
+                <svg width="25" height="10" style="margin-right: 4px;">
+                    <line x1="0" y1="5" x2="20" y2="5" class="mainFlow legend-line"
+                        marker-end="url(#mainFlow-arrowhead)"></line>
+                </svg>
+                Fluxo Principal
+            </div>
+            <div class="legend-item">
+                <svg width="25" height="10" style="margin-right: 4px;">
+                    <line x1="0" y1="5" x2="20" y2="5" class="prerequisite legend-line"
+                        marker-end="url(#prerequisite-arrowhead)"></line>
+                </svg>
+                Pré-requisito
+            </div>
+        </div>
+        <div id="legend2">
+            <div><strong>Métricas (Tags):</strong></div>
+            <div class="legend-item"> <span class="legend-tag-color metric-impact"></span> I: Impacto </div>
+            <div class="legend-item"> <span class="legend-tag-color metric-difficulty"></span> D: Dificuldade </div>
+            <div class="legend-item"> <span class="legend-tag-color metric-progress"></span> P: Progresso </div>
+        </div>
+    </div>
+
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+
+    <script>
+        // --- Configurações Globais ---
+        const nodeWidth = 180; const childNodeWidth = 160;
+        const minNodeHeight = 70; const minChildNodeHeight = 60;
+        const horizontalSpacing = nodeWidth * 1.6; const verticalSpacingBase = 150;
+        const childVerticalSpacing = 15; const verticalExpandSpacing = 25;
+
+        // --- URL do Google Apps Script ---
+        // SUBSTITUA PELA URL REAL DO SEU APLICATIVO WEB IMPLANTADO
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz7I1Mh_5hvJrHzFJfsf4Cz0zq4v_07MIqbVN0CHaqzEFiejH64px3LukAIUuNJvN1OAA/exec";
+
+        let allNodes = []; let allLinks = []; let nodeDataMap = new Map();
+        let diagramData = { nodes: [], links: [] }; // Começa vazio, será carregado
+
+        // --- CÓDIGO PARA MATRIZ DE PRIORIZAÇÃO ---
+        function drawImpactDifficultyMatrix() {
+            const matrixContainer = d3.select("#matrix-container");
+            const matrixSvg = d3.select("#impact-difficulty-matrix");
+            const tooltip = d3.select("#matrix-tooltip");
+            matrixSvg.selectAll("*").remove();
+
+            const containerRect = matrixContainer.node().getBoundingClientRect();
+            if (!containerRect || containerRect.width <= 0 || containerRect.height <= 0) { console.error("Matrix container not ready or has invalid dimensions."); return; }
+            const margin = { top: 30, right: 30, bottom: 50, left: 60 };
+            const width = containerRect.width - margin.left - margin.right;
+            const height = containerRect.height - margin.top - margin.bottom;
+            if (width <= 0 || height <= 0) { console.error("Calculated matrix dimensions are invalid."); return; }
+
+            const matrixG = matrixSvg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+            const scaleDomain = [0, 10.5];
+            const xScale = d3.scaleLinear().domain(scaleDomain).range([0, width]);
+            const yScale = d3.scaleLinear().domain(scaleDomain).range([height, 0]);
+
+            // Defs da Matriz
+            const matrixDefs = matrixSvg.append("defs");
+            matrixDefs.append("marker").attr("id", "matrix-prerequisite-arrowhead").attr("viewBox", "0 -5 10 10").attr("refX", 5).attr("refY", 0).attr("markerWidth", 4).attr("markerHeight", 4).attr("orient", "auto-start-reverse").append("path").attr("d", "M0,-5L10,0L0,5").attr("fill", "#8e44ad");
+
+            // Eixos, Labels, Quadrantes
+            const xAxis = d3.axisBottom(xScale).ticks(10).tickSizeOuter(0);
+            const yAxis = d3.axisLeft(yScale).ticks(10).tickSizeOuter(0);
+            matrixG.append("g").attr("class", "matrix-axis matrix-axis-x").attr("transform", `translate(0,${height})`).call(xAxis);
+            matrixG.append("g").attr("class", "matrix-axis matrix-axis-y").call(yAxis);
+            matrixSvg.append("text").attr("class", "matrix-axis-label").attr("x", margin.left + width / 2).attr("y", height + margin.top + 35).text("Dificuldade Percebida (0-10)");
+            matrixSvg.append("text").attr("class", "matrix-axis-label").attr("transform", `translate(${margin.left - 40}, ${margin.top + height / 2}) rotate(-90)`).text("Impacto Percebido (0-10)");
+            const midValue = 5;
+            matrixG.append("line").attr("class", "quadrant-line").attr("x1", xScale(midValue)).attr("y1", 0).attr("x2", xScale(midValue)).attr("y2", height);
+            matrixG.append("line").attr("class", "quadrant-line").attr("x1", 0).attr("y1", yScale(midValue)).attr("x2", width).attr("y2", yScale(midValue));
+
+            // Filtra dados (APENAS NÓS FILHOS com dados válidos)
+            const matrixData = allNodes.filter(d => d.parent && d.impact != null && !isNaN(d.impact) && d.difficulty != null && !isNaN(d.difficulty));
+            console.log('Filtered Matrix Data:', matrixData); // DEBUG
+            const matrixDataMap = new Map(matrixData.map(node => [node.id, node]));
+
+            // Tooltip Handlers
+            const handleMouseOver = (event, d) => { d3.select(event.currentTarget).raise().transition().duration(100).attr("r", 8).style("stroke-width", "1.5px"); tooltip.transition().duration(100).style("opacity", 0.9); let tooltipHtml = `<strong>${d.label || 'N/A'}</strong> (${d.id})<br/>`; tooltipHtml += `Tipo: ${d.type || 'N/A'}<br/>`; tooltipHtml += `Impacto: ${d.impact.toFixed(1)}<br/>`; tooltipHtml += `Dificuldade: ${d.difficulty.toFixed(1)}<br/>`; tooltipHtml += `Progresso: ${d.progress != null ? d.progress + '%' : 'N/A'}<br/>`; if (d.comment) tooltipHtml += `<em>"${d.comment.replace(/\n/g, '<br/>')}"</em>`; tooltip.html(tooltipHtml); };
+            const handleMouseMove = (event, d) => { tooltip.style("left", (event.pageX + 15) + "px").style("top", (event.pageY - 25) + "px"); };
+            const handleMouseOut = (event, d) => { d3.select(event.currentTarget).transition().duration(100).attr("r", 6).style("stroke-width", "0.5px"); tooltip.transition().duration(200).style("opacity", 0); };
+
+            // Drag Handlers
+            const dragstartedMatrix = function (event, d) { d3.select(this).raise().classed("dragging", true); tooltip.style("opacity", 0); };
+            const draggedMatrix = function (event, d) {
+                const [pointerX, pointerY] = d3.pointer(event, matrixG.node());
+                let newDifficulty = xScale.invert(pointerX); let newImpact = yScale.invert(pointerY);
+                newDifficulty = Math.round(Math.max(0, Math.min(10, newDifficulty)) * 10) / 10;
+                newImpact = Math.round(Math.max(0, Math.min(10, newImpact)) * 10) / 10;
+                const nodeToUpdate = findNodeById(d.id); // Acha no DADO GLOBAL
+                if (nodeToUpdate) { nodeToUpdate.difficulty = newDifficulty; nodeToUpdate.impact = newImpact; d.difficulty = newDifficulty; d.impact = newImpact; } // Atualiza ambos
+                else { d.difficulty = newDifficulty; d.impact = newImpact; } // Fallback
+                d3.select(this).attr("cx", xScale(d.difficulty)).attr("cy", yScale(d.impact));
+                matrixG.select(`#matrix-label-${d.id}`).attr("x", xScale(d.difficulty)).attr("y", yScale(d.impact));
+                updateMatrixDependencyLinks(d.id); // Atualiza links conectados
+            };
+            const dragendedMatrix = function (event, d) { d3.select(this).classed("dragging", false); updateDiagram(); saveDataToSheet(); };
+
+            // Pontos (Círculos)
+            const dots = matrixG.selectAll(".matrix-dot").data(matrixData, d => d.id);
+            dots.exit().remove();
+            dots.enter().append("circle")
+                .attr("class", d => `matrix-dot ${d.type}`)
+                .attr("cx", d => xScale(d.difficulty)).attr("cy", d => yScale(d.impact)).attr("r", 0)
+                .call(d3.drag().on("start", dragstartedMatrix).on("drag", draggedMatrix).on("end", dragendedMatrix))
+                .on("mouseover", handleMouseOver).on("mousemove", handleMouseMove).on("mouseout", handleMouseOut)
+                .merge(dots)
+                .transition().duration(500).attr("cx", d => xScale(d.difficulty)).attr("cy", d => yScale(d.impact)).attr("r", 6);
+
+            // Labels dos Pontos
+            const labels = matrixG.selectAll(".matrix-label").data(matrixData, d => d.id);
+            labels.exit().remove();
+            labels.enter().append("text")
+                .attr("class", "matrix-label").attr("id", d => `matrix-label-${d.id}`)
+                .attr("x", d => xScale(d.difficulty)).attr("y", d => yScale(d.impact)).attr("dy", -10).style("opacity", 0)
+                .text(d => { const label = d.label.replace(/^\d+\.\s*/, ''); return label.length > 15 ? label.substring(0, 12) + "..." : label; })
+                .merge(labels)
+                .transition().duration(500).delay(100)
+                .attr("x", d => xScale(d.difficulty)).attr("y", d => yScale(d.impact)).style("opacity", 1);
+
+            // --- Desenha/Atualiza Links de Dependência na Matriz ---
+            function drawMatrixDependencyLinks() {
+                const dependencyLinksData = [];
+                matrixData.forEach(targetNode => { if (targetNode.prerequisites && Array.isArray(targetNode.prerequisites)) { targetNode.prerequisites.forEach(sourceId => { const sourceNode = matrixDataMap.get(sourceId); if (sourceNode) { dependencyLinksData.push({ source: sourceNode, target: targetNode, id: `matrix-link-${sourceId}-${targetNode.id}` }); } }); } });
+                const linkRadius = 6;
+                const linkSelection = matrixG.selectAll("line.prerequisite").data(dependencyLinksData, d => d.id); // Usa classe prerequisite
+                linkSelection.exit().remove();
+                linkSelection.enter().append("line")
+                    .attr("class", "prerequisite") // Usa classe prerequisite
+                    .attr("marker-end", "url(#matrix-prerequisite-arrowhead)") // Usa a seta correta
+                    .merge(linkSelection)
+                    .each(function (d) {
+                        const sourceX = xScale(d.source.difficulty); const sourceY = yScale(d.source.impact); const targetX = xScale(d.target.difficulty); const targetY = yScale(d.target.impact); const dx = targetX - sourceX; const dy = targetY - sourceY; const dist = Math.sqrt(dx * dx + dy * dy); if (dist === 0) { d3.select(this).attr("x1", sourceX).attr("y1", sourceY).attr("x2", sourceX).attr("y2", sourceY); return; } const ratio = (dist - linkRadius - 2) / dist; const adjustedTargetX = sourceX + dx * ratio; const adjustedTargetY = sourceY + dy * ratio; const startRatio = linkRadius / dist; const adjustedSourceX = sourceX + dx * startRatio; const adjustedSourceY = sourceY + dy * startRatio; d3.select(this).attr("x1", adjustedSourceX).attr("y1", adjustedSourceY).attr("x2", adjustedTargetX).attr("y2", adjustedTargetY);
+                    });
+            }
+
+            // Atualiza links conectados a um nó
+            function updateMatrixDependencyLinks(nodeId) {
+                const linksToUpdate = matrixG.selectAll("line.prerequisite") // Usa classe correta
+                    .filter(d => d.source.id === nodeId || d.target.id === nodeId);
+                linksToUpdate.each(function (d) {
+                    const sourceX = xScale(d.source.difficulty); const sourceY = yScale(d.source.impact); const targetX = xScale(d.target.difficulty); const targetY = yScale(d.target.impact); const dx = targetX - sourceX; const dy = targetY - sourceY; const dist = Math.sqrt(dx * dx + dy * dy); if (dist === 0) return; const linkRadius = 6; const ratio = (dist - linkRadius - 2) / dist; const adjustedTargetX = sourceX + dx * ratio; const adjustedTargetY = sourceY + dy * ratio; const startRatio = linkRadius / dist; const adjustedSourceX = sourceX + dx * startRatio; const adjustedSourceY = sourceY + dy * startRatio; d3.select(this).attr("x1", adjustedSourceX).attr("y1", adjustedSourceY).attr("x2", adjustedTargetX).attr("y2", adjustedTargetY);
+                });
+            }
+
+            drawMatrixDependencyLinks(); // Desenha as setas de dependência iniciais
+        }
+
+        // --- CÓDIGO DO DIAGRAMA PRINCIPAL ---
+        const diagramSvg = d3.select("#diagram");
+        const diagramG = diagramSvg.append("g");
+        const diagramLinkGroup = diagramG.append("g").attr("class", "links");
+        const diagramNodeGroup = diagramG.append("g").attr("class", "nodes");
+        const diagramZoom = d3.zoom().scaleExtent([0.15, 3]).on("start", () => diagramSvg.style("cursor", "grabbing")).on("zoom", (event) => diagramG.attr("transform", event.transform)).on("end", () => diagramSvg.style("cursor", "grab"));
+        diagramSvg.call(diagramZoom);
+
+        const diagramDefs = diagramG.append("defs");
+        diagramDefs.selectAll("marker")
+            .data(["mainFlow-arrowhead", "child-arrowhead", "prerequisite-arrowhead"])
+            .enter().append("marker").attr("id", d => d).attr("viewBox", "0 -5 10 10").attr("refX", 6).attr("refY", 0).attr("markerWidth", 6).attr("markerHeight", 6).attr("orient", "auto-start-reverse").append("path").attr("d", "M0,-5L10,0L0,5").attr("fill", d => { if (d === 'child-arrowhead') return '#aaa'; if (d === 'prerequisite-arrowhead') return '#8e44ad'; return '#555'; });
+
+        // --- Funções do Diagrama Principal ---
+        function processData(data) {
+            allNodes = []; nodeDataMap = new Map(); let currentX = horizontalSpacing / 2;
+            diagramData.nodes = data.nodes || []; diagramData.links = data.links || [];
+            allLinks = diagramData.links.filter(link => link.type !== 'feedback'); // Usa links carregados
+            const mainNodes = diagramData.nodes.sort((a, b) => (a.sequenceOrder || Infinity) - (b.sequenceOrder || Infinity)); // Ordena top-level
+
+            function processNode(node, parentId = null, isTopLevel = false) {
+                if (isTopLevel && node.x === undefined) node.x = currentX;
+                if (node.y === undefined) node.y = verticalSpacingBase;
+                node.parent = parentId;
+                node._expanded = (node.children && node.children.length > 0 && node._expanded !== false);
+                node._hidden = !!parentId && !nodeDataMap.get(parentId)?._expanded; // Esconde se pai não expandido
+
+                allNodes.push(node); nodeDataMap.set(node.id, node);
+                if (isTopLevel) currentX += horizontalSpacing;
+                if (node.children && node.children.length > 0) {
+                    // Processa filhos recursivamente
+                    node.children.forEach(child => processNode(child, node.id, false));
+                }
+            }
+            mainNodes.forEach(node => processNode(node, null, true));
+            // calculateLayout(); // Layout será chamado no update inicial
+        }
+
+        function calculateLayout() {
+            allNodes.forEach(node => {
+                if (node.parent && !node._hidden) {
+                    const parentNode = nodeDataMap.get(node.parent); if (!parentNode) return;
+                    const parentHeight = parentNode.calculatedHeight || (parentNode.parent ? minChildNodeHeight : minNodeHeight);
+                    const siblings = parentNode.children.map(cId => nodeDataMap.get(cId.id)).filter(c => c && !c._hidden).sort((a, b) => (a.displayOrder || a.order || 0) - (b.displayOrder || b.order || 0)); // Usa displayOrder ou order
+                    const childIndex = siblings.findIndex(s => s.id === node.id);
+                    let childY = parentNode.y + parentHeight / 2 + verticalExpandSpacing;
+                    for (let i = 0; i < childIndex; i++) { const siblingHeight = siblings[i].calculatedHeight || minChildNodeHeight; childY += siblingHeight + childVerticalSpacing; }
+                    const currentChildHeight = node.calculatedHeight || minChildNodeHeight;
+                    node.x = parentNode.x; node.y = childY + currentChildHeight / 2;
+                } else if (!node.parent && node.x === undefined) {
+                    // Nós pais que não tiveram X inicial (não deveria acontecer com processData atual)
+                    const mainNodes = allNodes.filter(n => !n.parent).sort((a, b) => (a.sequenceOrder || Infinity) - (b.sequenceOrder || Infinity));
+                    const nodeIndex = mainNodes.findIndex(n => n.id === node.id);
+                    node.x = (horizontalSpacing / 2) + (nodeIndex * horizontalSpacing);
+                    node.y = verticalSpacingBase;
+                }
+            });
+        }
+
+        function wrapText(textElement, text, width) { /* ... Sem alterações ... */ const node = d3.select(textElement); node.selectAll("tspan").remove(); if (!text) { node.text(''); return; } const lines = text.split('\n'); const lineHeight = 1.1; lines.forEach((lineText, index) => { const words = lineText.split(/\s+/).filter(w => w.length > 0); let currentLine = []; let tspan = node.append("tspan").attr("x", 0).attr("dy", index === 0 ? "0em" : `${lineHeight}em`); words.forEach(word => { currentLine.push(word); tspan.text(currentLine.join(" ")); if (tspan.node().getComputedTextLength() > width && currentLine.length > 1) { currentLine.pop(); tspan.text(currentLine.join(" ")); currentLine = [word]; tspan = node.append("tspan").attr("x", 0).attr("dy", `${lineHeight}em`).text(word); } }); }); }
+        function updateNodeSize(selection) { /* ... Sem alterações ... */ const tagHeight = 18; const tagPaddingX = 5; const tagGap = 4; const gapAboveTags = 8; selection.each(function (d) { const gNode = d3.select(this); const title = gNode.select("text.node-label"); const comment = gNode.select("text.comment-text"); const titleBBox = title.node().getBBox(); const commentBBox = (comment.node().textContent.trim() !== "") ? comment.node().getBBox() : { width: 0, height: 0, y: 0 }; const paddingX = 15; const paddingYTop = 10; const paddingYBottom = 10; const lineGap = 5; const isChild = !!d.parent; const minWidth = isChild ? childNodeWidth : nodeWidth; const minHeight = isChild ? minChildNodeHeight : minNodeHeight; const hasMetrics = (d.impact != null || d.difficulty != null || d.progress != null); const metricsAreaHeight = hasMetrics ? (gapAboveTags + tagHeight + paddingYBottom) : paddingYBottom; let boxHeight = paddingYTop + titleBBox.height + (commentBBox.height > 0 ? lineGap + commentBBox.height : 0) + metricsAreaHeight; boxHeight = Math.max(minHeight, boxHeight); d.calculatedHeight = boxHeight; const textWidth = Math.max(titleBBox.width, commentBBox.width); let boxWidth = Math.max(minWidth, textWidth + paddingX * 2); if (hasMetrics) { const minTagWidth = 40; const requiredWidthForTags = (minTagWidth * 3) + (tagGap * 2) + (paddingX * 2); boxWidth = Math.max(boxWidth, requiredWidthForTags); } gNode.select("rect").attr("width", boxWidth).attr("height", boxHeight).attr("x", -boxWidth / 2).attr("y", -boxHeight / 2); title.attr("y", -boxHeight / 2 + paddingYTop + titleBBox.height / 2); if (commentBBox.height > 0) { comment.attr("y", -boxHeight / 2 + paddingYTop + titleBBox.height + lineGap + commentBBox.height / 2); } if (hasMetrics) { const bottomEdgeY = boxHeight / 2; const tagsTopY = bottomEdgeY - paddingYBottom - tagHeight; const tagWidth = (boxWidth - paddingX * 2 - tagGap * 2) / 3; const tagCenterY = tagsTopY + tagHeight / 2; const tagX_I = -boxWidth / 2 + paddingX + tagWidth / 2; const tagX_D = tagX_I + tagWidth + tagGap; const tagX_P = tagX_D + tagWidth + tagGap; const impactGrp = gNode.select("g.metric-impact"); impactGrp.style("opacity", d.impact != null ? 1 : 0); if (d.impact != null) { impactGrp.attr("transform", `translate(${tagX_I}, ${tagCenterY})`); impactGrp.select("rect").attr("width", tagWidth).attr("height", tagHeight).attr("x", -tagWidth / 2).attr("y", -tagHeight / 2); impactGrp.select("text").text(`I: ${typeof d.impact === 'number' ? d.impact.toFixed(1) : d.impact}`); } const diffGrp = gNode.select("g.metric-difficulty"); diffGrp.style("opacity", d.difficulty != null ? 1 : 0); if (d.difficulty != null) { diffGrp.attr("transform", `translate(${tagX_D}, ${tagCenterY})`); diffGrp.select("rect").attr("width", tagWidth).attr("height", tagHeight).attr("x", -tagWidth / 2).attr("y", -tagHeight / 2); diffGrp.select("text").text(`D: ${typeof d.difficulty === 'number' ? d.difficulty.toFixed(1) : d.difficulty}`); } const progGrp = gNode.select("g.metric-progress"); progGrp.style("opacity", d.progress != null ? 1 : 0); if (d.progress != null) { progGrp.attr("transform", `translate(${tagX_P}, ${tagCenterY})`); progGrp.select("rect").attr("width", tagWidth).attr("height", tagHeight).attr("x", -tagWidth / 2).attr("y", -tagHeight / 2); progGrp.select("text").text(`P: ${d.progress}%`); } } else { gNode.selectAll(".metric-tag").style("opacity", 0); } });
+        }
+        function updateDiagram() { /* ... Sem alterações ... */ calculateLayout(); const visibleNodes = allNodes.filter(n => !n._hidden); const visibleLinks = generateVisibleLinks(visibleNodes); const nodeSelection = diagramNodeGroup.selectAll("g.node-group").data(visibleNodes, d => d.id); nodeSelection.exit().remove(); const nodeEnter = nodeSelection.enter().append("g").attr("class", d => `node-group ${d.parent ? 'child-node' : 'node'} ${d.type}`).attr("transform", d => `translate(${d.x}, ${d.y})`).on("click", nodeClicked).call(d3.drag().on("start", dragstarted).on("drag", dragged).on("end", dragended)); nodeEnter.append("rect"); nodeEnter.append("text").attr("class", "node-label"); nodeEnter.append("text").attr("class", "comment-text"); const impactTag = nodeEnter.append("g").attr("class", "metric-tag metric-impact"); impactTag.append("rect"); impactTag.append("text"); const difficultyTag = nodeEnter.append("g").attr("class", "metric-tag metric-difficulty"); difficultyTag.append("rect"); difficultyTag.append("text"); const progressTag = nodeEnter.append("g").attr("class", "metric-tag metric-progress"); progressTag.append("rect"); progressTag.append("text"); const nodeUpdate = nodeEnter.merge(nodeSelection); nodeUpdate.transition().duration(350).attr("transform", d => `translate(${d.x}, ${d.y})`); nodeUpdate.select("text.node-label").each(function (d) { const maxWidth = (d.parent ? childNodeWidth : nodeWidth) - 30; wrapText(this, d.label, maxWidth); }); nodeUpdate.select("text.comment-text").each(function (d) { const maxWidth = (d.parent ? childNodeWidth : nodeWidth) - 30; wrapText(this, d.comment || "", maxWidth); }); updateNodeSize(nodeUpdate); nodeUpdate.classed("expanded", d => d._expanded); const linkSelection = diagramLinkGroup.selectAll("path").data(visibleLinks, d => d.id || `${d.source}-${d.target}-${d.type || 'main'}`); linkSelection.exit().remove(); const linkEnter = linkSelection.enter().append("path").attr("class", d => d.type || 'mainFlow').attr("marker-end", d => { const type = d.type || 'mainFlow'; if (type === 'childLink') return "url(#child-arrowhead)"; if (type === 'prerequisite') return "url(#prerequisite-arrowhead)"; return `url(#mainFlow-arrowhead)`; }); linkEnter.merge(linkSelection).transition().duration(350).attr("d", calculateLinkPath); adjustDiagramSvgSize(); }
+        function adjustDiagramSvgSize() { /* ... Sem alterações ... */ let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity; let hasVisibleNodes = false; diagramNodeGroup.selectAll("g.node-group").each(function (d) { if (d._hidden) return; hasVisibleNodes = true; const rect = d3.select(this).select("rect"); const h = d.calculatedHeight || minNodeHeight; const w = +rect.attr("width") || nodeWidth; minX = Math.min(minX, d.x - w / 2); maxX = Math.max(maxX, d.x + w / 2); minY = Math.min(minY, d.y - h / 2); maxY = Math.max(maxY, d.y + h / 2); }); const padding = 60; if (hasVisibleNodes) { const totalWidth = maxX - minX + padding * 2; const totalHeight = maxY - minY + padding * 2; diagramSvg.attr("width", Math.max(1800, totalWidth)).attr("height", Math.max(1200, totalHeight)).attr("viewBox", `${minX - padding} ${minY - padding} ${totalWidth} ${totalHeight}`); } else { diagramSvg.attr("width", 1800).attr("height", 1200).attr("viewBox", `0 0 1800 1200`); } }
+        function nodeClicked(event, d) { /* ... Sem alterações ... */ if (event.defaultPrevented) return; const node = nodeDataMap.get(d.id); if (node && node.children && node.children.length > 0) { node._expanded = !node._expanded; node.children.forEach(childObj => { const child = nodeDataMap.get(childObj.id); if (child) child._hidden = !node._expanded; }); updateDiagram(); } }
+        let dragStartX, dragStartY;
+        function dragstarted(event, d) { /* ... Sem alterações ... */ event.sourceEvent.stopPropagation(); diagramSvg.style("cursor", "grabbing"); dragStartX = event.x; dragStartY = event.y; d3.select(this).raise().classed("active", true); }
+        function dragged(event, d) { /* ... Sem alterações ... */ const node = nodeDataMap.get(d.id); if (!node) return; const dx = event.x - node.x; const dy = event.y - node.y; node.x = event.x; node.y = event.y; d3.select(this).attr("transform", `translate(${node.x}, ${node.y})`); if (!node.parent && node._expanded) { node.children.forEach(cId => { const childData = nodeDataMap.get(cId.id); if (childData && !childData._hidden) { childData.x += dx; childData.y += dy; diagramNodeGroup.selectAll('g.node-group').filter(n => n.id === childData.id).attr("transform", `translate(${childData.x}, ${childData.y})`); } }); } updateVisibleLinks(node.id); if (!node.parent && node._expanded) updateVisibleLinks(); }
+        function dragended(event, d) { /* ... Sem alterações ... */ diagramSvg.style("cursor", "grab"); d3.select(this).classed("active", false); /* Não chama updateDiagram() */ /* Opcional: Chamar saveDataToSheet() aqui também se quiser salvar posição do diagrama */ /* saveDataToSheet(); */ }
+        function updateVisibleLinks(movedNodeId = null) { /* ... Sem alterações ... */ const visibleNodes = allNodes.filter(n => !n._hidden); let linksData = generateVisibleLinks(visibleNodes); if (movedNodeId) { linksData = linksData.filter(l => { const sourceId = typeof l.source === 'object' ? l.source.id : l.source; const targetId = typeof l.target === 'object' ? l.target.id : l.target; let include = (sourceId === movedNodeId || targetId === movedNodeId); const movedNode = nodeDataMap.get(movedNodeId); if (movedNode && !movedNode.parent && movedNode.children) { const childrenIds = new Set(movedNode.children.map(c => nodeDataMap.get(c.id)?.id).filter(Boolean)); if (childrenIds.has(sourceId) || childrenIds.has(targetId)) { include = true; } } return include; }); } diagramLinkGroup.selectAll("path").data(linksData, d => d.id || `${d.source}-${d.target}-${d.type || 'main'}`).attr("d", calculateLinkPath); }
+        function calculateLinkPath(d) { /* ... Sem alterações ... */ const sourceId = typeof d.source === 'object' ? d.source.id : d.source; const targetId = typeof d.target === 'object' ? d.target.id : d.target; const sourceNode = nodeDataMap.get(sourceId); const targetNode = nodeDataMap.get(targetId); if (!sourceNode || !targetNode || sourceNode._hidden || targetNode._hidden) return "M0,0"; const sourceIsChild = !!sourceNode.parent; const targetIsChild = !!targetNode.parent; const sourceH = sourceNode.calculatedHeight || (sourceIsChild ? minChildNodeHeight : minNodeHeight); const targetH = targetNode.calculatedHeight || (targetIsChild ? minChildNodeHeight : minNodeHeight); const sourceRect = d3.select(diagramNodeGroup.selectAll('g.node-group').filter(n => n.id === sourceNode.id).node()).select('rect'); const targetRect = d3.select(diagramNodeGroup.selectAll('g.node-group').filter(n => n.id === targetNode.id).node()).select('rect'); const sourceW = sourceRect.empty() ? (sourceIsChild ? childNodeWidth : nodeWidth) : +sourceRect.attr('width'); const targetW = targetRect.empty() ? (targetIsChild ? childNodeWidth : nodeWidth) : +targetRect.attr('width'); const sx = sourceNode.x; const sy = sourceNode.y; const tx = targetNode.x; const ty = targetNode.y; const dx = tx - sx; const dy = ty - sy; let startOffsetX = 0, startOffsetY = 0; let endOffsetX = 0, endOffsetY = 0;
+            if (d.type === 'childLink') { startOffsetY = sourceH / 2; endOffsetY = -targetH / 2; startOffsetX = 0.1; endOffsetX = 0.1; }
+            else { if (dx === 0 && dy === 0) return "M0,0"; const angle = Math.atan2(dy, dx); const tanAngle = Math.tan(angle); if (Math.abs(dy / dx) < sourceH / sourceW) { startOffsetX = Math.sign(dx) * sourceW / 2; startOffsetY = startOffsetX * tanAngle; } else { startOffsetY = Math.sign(dy) * sourceH / 2; startOffsetX = startOffsetY / tanAngle; } if (Math.abs(dy / dx) < targetH / targetW) { endOffsetX = -Math.sign(dx) * targetW / 2; endOffsetY = endOffsetX * tanAngle; } else { endOffsetY = -Math.sign(dy) * targetH / 2; endOffsetX = endOffsetY / tanAngle; } startOffsetX = isFinite(startOffsetX) ? startOffsetX : 0; startOffsetY = isFinite(startOffsetY) ? startOffsetY : 0; endOffsetX = isFinite(endOffsetX) ? endOffsetX : 0; endOffsetY = isFinite(endOffsetY) ? endOffsetY : 0; }
+            const adjustedSX = sx + startOffsetX; const adjustedSY = sy + startOffsetY; const adjustedTX = tx + endOffsetX; const adjustedTY = ty + endOffsetY; return `M${adjustedSX},${adjustedSY}L${adjustedTX},${adjustedTY}`;
+        }
+        function generateVisibleLinks(visibleNodes) { /* ... Sem alterações ... */ const visibleNodeIds = new Set(visibleNodes.map(n => n.id)); const linksToDraw = []; allLinks.forEach(linkDef => { if (visibleNodeIds.has(linkDef.source) && visibleNodeIds.has(linkDef.target)) { linksToDraw.push({ ...linkDef, id: `link-${linkDef.source}-${linkDef.target}-${linkDef.type || 'main'}` }); } }); visibleNodes.filter(n => n._expanded && n.children && n.children.length > 0).forEach(parent => { const children = parent.children.map(c => nodeDataMap.get(c.id)).filter(c => c && !c._hidden).sort((a, b) => (a.order || 0) - (b.order || 0)); children.forEach((child, index) => { linksToDraw.push({ source: parent.id, target: child.id, type: 'childLink', id: `link-${parent.id}-${child.id}-child` }); if (parent.childrenLayout === 'vertical-sequence' && index < children.length - 1) { linksToDraw.push({ source: child.id, target: children[index + 1].id, type: 'childLink', id: `link-${child.id}-${children[index + 1].id}-seq` }); } }); }); visibleNodes.forEach(node => { if (node.prerequisites && Array.isArray(node.prerequisites)) { node.prerequisites.forEach(prereqId => { const sourceNode = nodeDataMap.get(prereqId); if (sourceNode && visibleNodeIds.has(sourceNode.id)) { linksToDraw.push({ source: sourceNode.id, target: node.id, type: 'prerequisite', id: `link-${sourceNode.id}-${node.id}-prereq` }); } }); } }); return linksToDraw; }
+
+        // --- Data Handling Helper ---
+        function findNodeById(id) { // Simplificado para buscar em allNodes
+            return allNodes.find(n => n.id === id);
+        }
+
+        // --- Fetch Initial Data ---
+        function loadDataAndInitialize() {
+            console.log("Carregando dados iniciais via Apps Script...");
+            const loading = d3.select('body').append('div').attr('id', 'loading-indicator').style('position', 'fixed').style('top', '50%').style('left', '50%').style('transform', 'translate(-50%, -50%)').style('padding', '10px').style('background', 'rgba(0,0,0,0.7)').style('color', 'white').style('border-radius', '5px').text('Carregando dados...');
+            if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === "COLE_A_URL_DO_SEU_APLICATIVO_WEB_APPS_SCRIPT_AQUI") { alert("Erro: A URL do Google Apps Script não foi definida."); loading.remove(); return; }
+            fetch(APPS_SCRIPT_URL).then(response => { if (!response.ok) { throw new Error(`HTTP error! status: ${response.status}`); } return response.json(); }).then(data => { console.log("Dados recebidos:", data); if (data.error) { console.error("Erro do Apps Script:", data.error, data.details); alert(`Erro ao carregar dados: ${data.error}\nDetalhes: ${data.details || 'N/A'}`); diagramData = { nodes: [], links: [] }; } else if (!data || !Array.isArray(data.nodes)) { console.error("Formato inválido:", data); alert("Erro: Formato de dados recebido é inválido."); diagramData = { nodes: [], links: [] }; } else { diagramData = data; } }).catch(error => { console.error("Erro no fetch inicial:", error); alert("Falha grave ao carregar dados. Verifique a URL e permissões."); diagramData = { nodes: [], links: [] }; }).finally(() => { loading.remove(); processData(diagramData); drawImpactDifficultyMatrix(); updateDiagram(); });
+        }
+
+        // --- Save Data Function ---
+        // --- Save Data Function (MODIFICADA para chamar Netlify Function) ---
+            function saveDataToSheet(changedNodeData) {
+                if (!changedNodeData || !changedNodeData.id || changedNodeData.impact == null || changedNodeData.difficulty == null) {
+                    console.error("Dados insuficientes para salvar:", changedNodeData);
+                    alert("Erro interno: Não foi possível determinar quais dados salvar.");
+                    return;
+                }
+
+                console.log(`Salvando alterações para ${changedNodeData.id} via Netlify Function...`);
+                const savingIndicator = d3.select('body').append('div')
+                    .attr('id', 'saving-indicator')
+                    .style('position', 'fixed').style('bottom', '10px').style('right', '10px')
+                    .style('background-color', 'rgba(0,0,0,0.7)').style('color', 'white')
+                    .style('padding', '5px 10px').style('border-radius', '3px').text('Salvando...');
+
+                // Dados a serem enviados para a Netlify Function
+                const payload = {
+                    id: changedNodeData.id,
+                    impact: changedNodeData.impact,
+                    difficulty: changedNodeData.difficulty
+                    // Adicione outros campos aqui se precisar salvar mais tarde
+                    // progress: changedNodeData.progress
+                };
+
+                // --- MUDANÇA AQUI: Chama a Netlify Function ---
+                fetch('/.netlify/functions/save-data', { // Caminho relativo para a função
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json', // Envia JSON para a Netlify Function
+                    },
+                    body: JSON.stringify(payload) // Envia o payload como JSON
+                })
+                    // --------------------------------------------
+                    .then(response => {
+                        // A Netlify Function deve retornar status 200 em sucesso ou erro tratado
+                        if (!response.ok) {
+                            // Tenta ler o erro retornado pela função Netlify
+                            return response.json().then(errData => {
+                                throw new Error(`Erro ${response.status}: ${errData.error || response.statusText}`);
+                            }).catch(() => {
+                                // Se a resposta do erro não for JSON
+                                throw new Error(`Erro HTTP ${response.status}: ${response.statusText}`);
+                            });
+                        }
+                        return response.json(); // Resposta JSON da Netlify Function (que contém a resposta do Apps Script)
+                    })
+                    .then(data => {
+                        // Verifica a resposta *dentro* do JSON retornado pela Netlify Function (que veio do Apps Script)
+                        if (data.success) {
+                            console.log("Dados salvos (via Netlify Function):", data.message);
+                            savingIndicator.text('Salvo!').style('background-color', 'rgba(0, 128, 0, 0.7)')
+                                .transition().delay(1500).remove();
+                        } else {
+                            console.error("Falha ao salvar (Apps Script via Netlify):", data.error, data.details);
+                            alert(`Erro ao salvar dados: ${data.error}\nDetalhes: ${data.details || 'N/A'}`);
+                            savingIndicator.text('Erro ao salvar!').style('background-color', 'rgba(200, 0, 0, 0.7)')
+                                .transition().delay(3000).remove();
+                        }
+                    })
+                    .catch(error => {
+                        // Erro de rede ao chamar a Netlify Function ou erro não tratado
+                        console.error("Erro no fetch para Netlify Function:", error);
+                        alert(`Falha grave ao salvar dados: ${error.message}`);
+                        savingIndicator.text('Erro de rede!').style('background-color', 'rgba(200, 0, 0, 0.7)')
+                            .transition().delay(3000).remove();
+                    });
+            }
+
+        // --- Inicialização ---
+        loadDataAndInitialize();
+
+    </script>
+</body>
+
+</html>

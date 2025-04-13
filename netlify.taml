@@ -1,0 +1,12 @@
+# netlify.toml
+[functions]
+  directory = "netlify/functions"
+  # Se estiver usando node-fetch v2, pode precisar especificar a versão do Node
+  # node_bundler = "esbuild"
+  # node_version = "18" # ou 16, 20 etc. Verifique compatibilidade do Netlify
+
+# Opcional: Redirecionamento para facilitar a chamada da API (evita problema de case sensitive no path)
+# [[redirects]]
+#   from = "/api/*"
+#   to = "/.netlify/functions/:splat"
+#   status = 200
